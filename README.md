@@ -4,15 +4,11 @@
 
 This package solves global polynomial optimization problem using semidefinite programming (SDP) approaches proposed in Lasserre (2001) and Nie et al (2006).
 
-This package first creates an R object that describes the SDPs, which is then supplied to [Mosek](https://www.mosek.com/)'s R interface for solution.
-
 ### Installation
 
-This package uses [Mosek](https://www.mosek.com/)'s R interface `Rmosek` to solve the SDPs, which must be installed in order for `optpoly` to function properly.
+This package uses [Mosek](https://www.mosek.com/)'s R interface `Rmosek` to solve the SDPs, which must be installed to use `optpoly`.
 
-[Mosek](https://www.mosek.com/) offers free license to academic users.
-
-To install Mosek and its R interface, check the following [installation guide](https://docs.mosek.com/9.0/rmosek/install-interface.html).
+Mosek offers free license to academic users. To install Mosek and its R interface, check the following [installation guide](https://docs.mosek.com/9.0/rmosek/install-interface.html).
 
 To install **optpoly**, type
 
@@ -61,7 +57,7 @@ require(optpoly)
 sol = optpoly("min", coefs, degrees, opt=NULL)
 ```
 
-`sol` has the following arguments.
+`sol` has the following arguments:
 
 ```r
 $objective_primal
@@ -116,15 +112,15 @@ $hierarchy
 [1] 1
 ```
 
-`objective_primal` and `objective_dual` record values of the SDP primal and dual objectives, and they are equal when no error occured in solving SDP.
+`objective_primal` and `objective_dual` record values of the SDP primal and dual objectives, and they are equal when no error occured in solving SDP. When `certificate=TRUE`, they are exact global optimum.
 
 `sdpstatus` and `solstatus` record status of SDP solution, which is produced by [Mosek](https://www.mosek.com/).
 
-`certificate` record whether criterion for certificate of optimality has met. If `TRUE`, then `objective_primal` (which equals to `objective_dual`) is the exact global minimum. If `FALSE`, then `min(objective_primal, objective_dual)` is a lower bound for the global minimum.
+`certificate` record whether the criterion for certificate of optimality has met. If `TRUE`, then `objective_primal` (which equals to `objective_dual`) is the exact global minimum. If `FALSE`, then `min(objective_primal, objective_dual)` is a lower bound for the global minimum.
 
 If `certificate=TRUE`, then `rank` represents the number of optimizers. The optimizers can be extracted by the `extractSolution` function in **optpoly**.
 
-`hierarchy` records the number of SDP models solved to obtain current output, which is similar to the number of iterations in local optimization problems. By default, `optpoly` solves only one SDP. This may result in `certificate=FALSE`, in which case one should increase the number of iterations in order to obtain exact solution. Specify `opt=list(hierarchy=3)` for example to increase it.
+`hierarchy` records the number of SDP models solved to obtain current output, which is similar to the number of iterations in local optimization problems. By default, `optpoly` solves only **one** SDP. This may result in `certificate=FALSE`, in which case one should increase the number of iterations in order to obtain exact solution. Specify `opt=list(hierarchy=3)` for example to increase it.
 
 To extract optimizers from the SDP solution, type
 

@@ -1,14 +1,7 @@
 export("createMonomialVector",
        "createMomentMatrixSparse",
-       "restoreOptimalMomentMatrix",
-       "checkFlatExtension",
-       "sdpmodel",
        "optpoly",
        "optmanypoly",
-       "extractSolution",
-       "degreeToMonomial_cpp",
-       "monomialsToDegrees_cpp",
-       "determineMonomialPosition_cpp",
-       "evaluatePolynomial_cpp")
+       "extractSolution")
 importFrom(Rcpp, evalCpp)
 useDynLib(optpoly, .registration = TRUE)

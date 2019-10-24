@@ -5,7 +5,7 @@
 Global Optimization of Many Polynomials
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+Globally optimize many polynomials of same dimension and same degree.
 }
 \usage{
 optmanypoly(sense, coefMatrix, varDim, orderObj, orderMom, constrained, radius = NULL, multithread, verbose)
@@ -13,48 +13,55 @@ optmanypoly(sense, coefMatrix, varDim, orderObj, orderMom, constrained, radius =
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{sense}{
-%%     ~~Describe \code{sense} here~~
+whether to minimize or maximize the polynomial, either \code{"min"} or \code{"max"}.
 }
   \item{coefMatrix}{
-%%     ~~Describe \code{coefMatrix} here~~
+a matrix of coefficients, each row representing a polynomial.
 }
   \item{varDim}{
-%%     ~~Describe \code{varDim} here~~
+dimension of variables.
 }
   \item{orderObj}{
-%%     ~~Describe \code{orderObj} here~~
+degree of polynomials in \code{coefMatrix}.
 }
   \item{orderMom}{
-%%     ~~Describe \code{orderMom} here~~
+degree of semidefinite relaxation problems.
 }
   \item{constrained}{
-%%     ~~Describe \code{constrained} here~~
+\code{0} if optimization is over R^n space, \code{1} if optimization is over a sphere of length \code{radius}.
 }
   \item{radius}{
-%%     ~~Describe \code{radius} here~~
+a positive real number. If supplied and \code{constrained = 1}, the domain of the polynomial is restricted to be in the sphere of length \code{radius}.
 }
   \item{multithread}{
-%%     ~~Describe \code{multithread} here~~
+an indicator for whether to allow for multithreading to solve SDPs.
 }
   \item{verbose}{
-%%     ~~Describe \code{verbose} here~~
+an integer that is passed to the SDP solver Mosek. If positive, Mosek will print its output on the R console.
 }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+This function solves global optimization problems of many polynomials of same dimension and degree, using the same level of semidefinite programming (SDP) relaxation. Each row of \code{coefMatrix} represents a polynomial, and the coefficients must be arranged in the same order as \code{createMomentMatrixSparse(varDim, orderMom)}. This function does not check certificate of optimality.
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+\item{objective_primal}{a vector of primal objectives of the SDPs}
+\item{objective_dual}{a vector of dual objective of the SDPs}
+\item{sdpstatus}{a vector of status of the SDPs}
+\item{solstatus}{a vector of status of the SDP solutions}
+\item{varDim}{dimension of polynomials}
+\item{orderObj}{degree of polynomials in \code{coefMatrix}}
+\item{orderMom}{degree of semidefinite relaxation problems}
+\item{moment_vectors}{a matrix in which each row represents a moment matrix arranged in the same order as \code{createMomentMatrixSparse(varDim, orderMom)}}
 }
 \references{
-%% ~put references to the literature/web site here ~
+Lasserre, Jean B (2001). Global optimization with polynomials and the problem of moments, \emph{SIAM Journal on optimization}, \strong{11}, 796-817.
+
+Nie et al (2006). Minimizing polynomials via sum of squares over the gradient ideal, \emph{Mathematical programming}, \strong{106}, 587-606.
+
+Lasserre, Jean B (2015). \emph{An introduction to polynomial and semi-algebraic optimization}, Cambridge University Press.
 }
 \author{
-%%  ~~who you are~~
+Wooyong Lee
 }
 \note{
 %%  ~~further notes~~
@@ -66,63 +73,7 @@ optmanypoly(sense, coefMatrix, varDim, orderObj, orderMom, constrained, radius =
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
 
-## The function is currently defined as
-function (sense, coefMatrix, varDim, orderObj, orderMom, constrained,
-    radius = NULL, multithread, verbose)
-{
-    N = nrow(coefMatrix)
-    monomialSystemObj = createMonomialVector(varDim, as.integer((orderObj +
-        1)/2))
-    momentMatrixSparseObj = as.matrix(createMomentMatrixSparse(monomialSystemObj$vec))
-    monomialSystemMom = createMonomialVector(varDim, as.integer((orderMom +
-        1)/2))
-    momentMatrixSparseMom = as.matrix(createMomentMatrixSparse(monomialSystemMom$vec))
-    degrees = monomialsToDegrees_cpp(momentMatrixSparseObj[,
-        3], monomialSystemObj$primes)
-    if (constrained == 0) {
-        res = foreach(i = 1:N, .combine = "rbind") \%dopar\% {
-            grad = computeGradient(coefMatrix[i, ], degrees,
-                monomialSystemObj$primes)
-            model = createMosekSdpModelSkeletonWithGradientIdeals_cpp(varDim,
-                orderObj, orderMom, grad, monomialSystemMom$primes,
-                momentMatrixSparseMom)
-            model = addLabelsToSkeleton(model, sense, multithread)
-            model$barc = createMosekSdpCoefficientMatrixFromMonomials_cpp(coefMatrix[i,
-                ], momentMatrixSparseObj[, 3], momentMatrixSparseObj)
-            mosekSol = mosek(model, opts = list(verbose = verbose,
-                soldetail = 1))
-            data.frame(objective_primal = mosekSol$sol$itr$pobjval,
-                objective_primal = mosekSol$sol$itr$pobjval,
-                sdpstatus = mosekSol$response$msg, solstatus = mosekSol$sol$itr$solsta,
-                matrix(mosekSol$sol$itr$barx[[1]], nrow = 1,
-                  ncol = nrow(momentMatrixSparseMom)))
-        }
-    }
-    else {
-        model = createMosekSdpModelSkeleton_cpp(varDim, orderMom,
-            constrained, radius, monomialSystemMom$primes, momentMatrixSparseMom)
-        model = addLabelsToSkeleton(model, sense, multithread)
-        res = foreach(i = 1:N, .combine = "rbind") \%dopar\% {
-            model$barc = createMosekSdpCoefficientMatrixFromMonomials_cpp(coefMatrix[i,
-                ], momentMatrixSparseObj[, 3], momentMatrixSparseObj)
-            mosekSol = mosek(model, opts = list(verbose = verbose,
-                soldetail = 1))
-            data.frame(objective_primal = mosekSol$sol$itr$pobjval,
-                objective_primal = mosekSol$sol$itr$pobjval,
-                sdpstatus = mosekSol$response$msg, solstatus = mosekSol$sol$itr$solsta,
-                matrix(mosekSol$sol$itr$barx[[1]], nrow = 1,
-                  ncol = nrow(momentMatrixSparseMom)))
-        }
-    }
-    return(list(objective_primal = res$objective_primal, objective_dual = res$objective_dual,
-        sdpstatus = factor(res$sdpstatus), solstatus = factor(res$solstatus),
-        varDim = varDim, orderobj = orderObj, orderMom = orderMom,
-        moment_vectors = res[, -c(1:4)]))
-  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

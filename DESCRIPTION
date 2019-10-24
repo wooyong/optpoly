@@ -1,12 +1,12 @@
 Package: optpoly
 Type: Package
-Title: Global Polynomial Optimization via Semidefinite Relaxations
-Version: 2019.10.08
+Title: Global Polynomial Optimization
+Version: 2019.10.24
 Author: Wooyong Lee
 Maintainer: Wooyong Lee <wooyong@uchicago.edu>
-Description: Global polynomial optimization via semidefinite programming (SDP) methods
+Description: Global polynomial optimization using semidefinite programming (SDP) methods
     proposed by Lasserre (2001) and Nie et al (2006). This package uses the SDP solver
-    Mosek and its R interface.
+    Mosek and its R interface Rmosek.
 License: MIT
 Encoding: UTF-8
 LazyData: true

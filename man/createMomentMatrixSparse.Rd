@@ -5,7 +5,7 @@
 Create Moment Matrix
 }
 \description{
-Create symbolic moment matrix of the semidefinite program in sparse triplet form
+Create symbolic moment matrix in sparse triplet form.
 }
 \usage{
 createMomentMatrixSparse(monomialVector)
@@ -13,24 +13,20 @@ createMomentMatrixSparse(monomialVector)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{monomialVector}{
-%%     ~~Describe \code{monomialVector} here~~
+a vector of monomials, output of \code{createMonomialVector$vec}.
 }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+This function creates a moment matrix, which is the outer product of \code{monomialvector}, in sparse triplet form. The maximum degree of monomials appearing in the moment matrix is twice of the maximum degree of \code{monomialvector}.
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+a moment matrix expressed in sparse triplet form.
 }
 \references{
 %% ~put references to the literature/web site here ~
 }
 \author{
-%%  ~~who you are~~
+Wooyong Lee
 }
 \note{
 %%  ~~further notes~~
@@ -42,19 +38,10 @@ createMomentMatrixSparse(monomialVector)
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function (monomialVector)
-{
-    momentMatrix = createMomentMatrix(monomialVector)
-    momentMatrixSparse = data.frame(k = as.vector(row(momentMatrix)),
-        l = as.vector(col(momentMatrix)), v = as.vector(momentMatrix))
-    momentMatrixSparse = subset(momentMatrixSparse, k >= l)
-    return(momentMatrixSparse)
-  }
+# list of monomials in two dimensions of degree at most 2
+monomialVector = createMonomialVector(2, 2)
+# create the outer product of monomialvector in sparse triplet form
+createMomentMatrixSparse(monomialVector$vec)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

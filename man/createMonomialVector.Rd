@@ -5,7 +5,7 @@
 Create Monomial Vector
 }
 \description{
-Create symbolic monomial vector used for describing semidefinite programs
+Create symbolic vector of monomials.
 }
 \usage{
 createMonomialVector(varDim, order)
@@ -13,27 +13,25 @@ createMonomialVector(varDim, order)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{varDim}{
-%%     ~~Describe \code{varDim} here~~
+dimension of variables.
 }
   \item{order}{
-%%     ~~Describe \code{order} here~~
+maximum degree of monomials.
 }
 }
 \details{
-%%  ~~ If necessary, more details than the description above ~~
+This function creates a complete list of monomials in \code{varDim} dimensions of degree at most \code{order}. The monomials are represented by unique identifiers created by prime numbers. For example, to express a monomial in (x1, x2), x1 and x2 are represented by 2 and 3, and then a monomial x1^2*x2 is represented by 2^2*3 = 12.
 }
 \value{
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
+\item{vec}{a vector containing all monomials in \code{varDim} dimensions of degree at most \code{order}}
+\item{primes}{a vector of prime numbers used to describe monomials, length of which equals \code{varDim}}
+\item{order}{maximum degree of monomials}
 }
 \references{
 %% ~put references to the literature/web site here ~
 }
 \author{
-%%  ~~who you are~~
+Wooyong Lee
 }
 \note{
 %%  ~~further notes~~
@@ -45,48 +43,8 @@ createMonomialVector(varDim, order)
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 }
 \examples{
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-function (varDim, order)
-{
-    lengthMatrix = matrix(0, nrow = max(order, 1), ncol = varDim)
-    lengthMatrix[1, ] = rep(1, varDim)
-    if (order >= 2) {
-        for (r in 2:order) {
-            for (v in 1:varDim) {
-                lengthMatrix[r, v] = sum(lengthMatrix[r - 1,
-                  v:varDim])
-            }
-        }
-    }
-    primes = getPrimes(as.integer(2 + 2 * varDim * log(varDim)))
-    monomialVectorList = vector("list", 1 + order)
-    monomialVectorList[[1]] = 1
-    if (order >= 1) {
-        monomialVectorList[[2]] = primes[1:varDim]
-    }
-    if (order >= 2) {
-        for (r in 2:order) {
-            for (v in 1:varDim) {
-                if (v == 1) {
-                  idVec = primes[v] * monomialVectorList[[r]]
-                }
-                else {
-                  idVec = primes[v] * monomialVectorList[[r]][(1 +
-                    sum(lengthMatrix[r - 1, 1:(v - 1)])):sum(lengthMatrix[r -
-                    1, ])]
-                }
-                monomialVectorList[[1 + r]] = c(monomialVectorList[[1 +
-                  r]], idVec)
-            }
-        }
-    }
-    monomialVector = unlist(monomialVectorList, use.names = FALSE)
-    return(list(vec = monomialVector, primes = primes[1:varDim]))
-  }
+# list of monomials in two dimensions of degree at most 2
+createMonomialVector(2, 2)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

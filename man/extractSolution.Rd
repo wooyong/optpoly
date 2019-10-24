@@ -5,28 +5,28 @@
 Extract Solution
 }
 \description{
-Extract global optimizers of a polynomial from the semidefinite solution
+Extract global optimizers of a polynomial from the semidefinite solution.
 }
 \usage{
-extractSolution(sol, points = NULL, vreltol = 1e-10, ereltol = 0.001)
+extractSolution(sol, points = NULL, vabstol = 1e-10, ereltol = 0.001)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{sol}{
-output of the function \code{optpoly}
+output of the function \code{optpoly}.
 }
   \item{points}{
-number of optimizers, set to \code{sol$smallRank} if missing
+number of optimizers, set to \code{sol$rank} if missing.
 }
-  \item{vreltol}{
-tolerance for regarding a value smaller than \code{vreltol} in absolute value as zero
+  \item{vabstol}{
+absolute tolerance for regarding a value smaller than \code{vabstol} in absolute value as zero.
 }
   \item{ereltol}{
-tolerance for regarding a relative drop in the eigenvalue sequence as a drop to zero
+relative tolerance for regarding a drop in the eigenvalue sequence as a drop to zero.
 }
 }
 \details{
-This function extracts optimal solution of the polynomial optimization problem given the output of \code{optpoly}. In theory, the number of solutions equals to the rank of the optimal moment matrix given by the semidefinite program. However, since it is hard to numerically check the rank of the matrix, the user may also directly supply the number of optimizers to \code{points}. Sometimes The optimal solution can be found by trying different values to \code{points}.
+This function extracts optimal solutions of a polynomial optimization problem given the output of \code{optpoly}. The number of solutions are automatically determined from the output. However, the user may specify the number of solutions to \code{points}, which can be useful if the number of solutions is known.
 }
 \value{
 A matrix where each row represents a solution to the polynomial optimization problem.
@@ -57,7 +57,13 @@ require(Rmosek)
 cf=c(4,-2.1,1/3,1,-4,4)
 dg=matrix(c(2,0,4,0,6,0,1,1,0,2,0,4), ncol=2, byrow=TRUE)
 
-sol=optpoly("min", cf, dg, list(radius=3))
+# minimization over R^2 space
+sol=optpoly("min", cf, dg)
+
+# extract solution
+extractSolution(sol)
+
+# extract solution specifying number of solutions is 2
 extractSolution(sol, points=2)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -2,20 +2,22 @@
 
 ### Introduction
 
-This package solves global optimization problems of polynomials. It uses semidefinite programming (SDP) approach for global polynomial optimization proposed in Lasserre (2001) and Nie et al (2006).
+This package solves global polynomial optimization problem using semidefinite programming (SDP) approaches proposed in Lasserre (2001) and Nie et al (2006).
 
-Given a polynomial, it first creates an R object that describes the SDP model. Then the object is supplied to an SDP solver for the result.
+This package first creates an R object that describes the SDPs, which is then supplied to [Mosek](https://www.mosek.com/)'s R interface for solution.
 
 ### Installation
 
-This package uses [Mosek](https://www.mosek.com/)'s R interface to solve SDP models, which should be installed before use. If one prefers other SDP solvers, one may take the SDP model object and supply it to the SDP solver of one's choice.
+This package uses [Mosek](https://www.mosek.com/)'s R interface `Rmosek` to solve the SDPs, which must be installed in order for `optpoly` to function properly.
+
+[Mosek](https://www.mosek.com/) offers free license to academic users.
 
 To install Mosek and its R interface, check the following [installation guide](https://docs.mosek.com/9.0/rmosek/install-interface.html).
 
 To install **optpoly**, type
 
 ```r
-install.packages("https://wooyong.github.io/data/packages/optpoly_2019.10.08.tar.gz", repos=NULL, type="source")
+install.packages("https://wooyong.github.io/data/packages/optpoly_2019.10.24.tar.gz", repos=NULL, type="source")
 ```
 
 Alternatively, to install **optpoly** directly from source on Github, type
@@ -29,7 +31,7 @@ library(devtools)
 install_github("wooyong/optpoly")
 ```
 
-To load the package, simply type
+To load package, simply type
 
 ```r
 library(optpoly)
@@ -56,10 +58,10 @@ To globally minimize this polynomial, type
 
 ```r
 require(optpoly)
-optpoly("min", coefs, degrees)
+sol = optpoly("min", coefs, degrees, opt=NULL)
 ```
 
-The output is as follows.
+`sol` has the following arguments.
 
 ```r
 $objective_primal
@@ -76,27 +78,27 @@ $solstatus
 
 $momentmatrix
                [,1]          [,2]          [,3]          [,4]          [,5]
- [1,]  1.000000e+00  6.444656e-17 -5.053775e-16  8.079834e-03 -6.404979e-02
- [2,]  6.444656e-17  8.079879e-03 -6.404979e-02  3.245976e-19 -4.128110e-18
- [3,] -5.053775e-16 -6.404979e-02  5.077902e-01 -2.431774e-18  3.227131e-17
- [4,]  8.079834e-03  3.245976e-19 -2.431774e-18  6.881513e-05 -5.187924e-04
- [5,] -6.404979e-02 -4.128110e-18  3.227131e-17 -5.187924e-04  4.103023e-03
- [6,]  5.077902e-01  3.282249e-17 -2.573479e-16  4.102977e-03 -3.252392e-02
- [7,]  7.191354e-19  6.876954e-05 -5.187924e-04  3.826438e-20 -8.657027e-20
- [8,] -4.259957e-18 -5.187924e-04  4.102977e-03 -4.938537e-20  2.918671e-19
- [9,]  3.284430e-17  4.102977e-03 -3.252392e-02  1.682414e-19 -2.106020e-18
-[10,] -2.575008e-16 -3.252392e-02  2.578509e-01 -1.243436e-18  1.644403e-17
+ [1,]  1.000000e+00 -9.585283e-18  7.616696e-17  8.071709e-03 -6.402697e-02
+ [2,] -9.585283e-18  8.071719e-03 -6.402697e-02 -8.232172e-20  6.139599e-19
+ [3,]  7.616696e-17 -6.402697e-02  5.078843e-01  6.531797e-19 -4.879001e-18
+ [4,]  8.071709e-03 -8.232172e-20  6.531797e-19  6.547742e-05 -5.169117e-04
+ [5,] -6.402697e-02  6.139599e-19 -4.879001e-18 -5.169117e-04  4.099519e-03
+ [6,]  5.078843e-01 -4.869281e-18  3.869230e-17  4.099509e-03 -3.251829e-02
+ [7,] -5.368288e-20  6.546717e-05 -5.169117e-04 -8.760306e-22  3.334345e-21
+ [8,]  6.132222e-19 -5.169117e-04  4.099509e-03  5.922014e-21 -3.945749e-20
+ [9,] -8.596957e-18  4.099509e-03 -3.251829e-02 -7.561097e-20  5.562050e-19
+[10,]  4.168205e-17 -3.251829e-02  2.579464e-01  3.637811e-19 -2.679651e-18
                [,6]          [,7]          [,8]          [,9]         [,10]
- [1,]  5.077902e-01  7.191354e-19 -4.259957e-18  3.284430e-17 -2.575008e-16
- [2,]  3.282249e-17  6.876954e-05 -5.187924e-04  4.102977e-03 -3.252392e-02
- [3,] -2.573479e-16 -5.187924e-04  4.102977e-03 -3.252392e-02  2.578509e-01
- [4,]  4.102977e-03  3.826438e-20 -4.938537e-20  1.682414e-19 -1.243436e-18
- [5,] -3.252392e-02 -8.657027e-20  2.918671e-19 -2.106020e-18  1.644403e-17
- [6,]  2.578510e-01  3.835813e-19 -2.177101e-18  1.672798e-17 -1.311232e-16
- [7,]  3.835813e-19  1.182823e-05 -8.378655e-06  3.523024e-05 -2.636468e-04
- [8,] -2.177101e-18 -8.378655e-06  3.527582e-05 -2.636468e-04  2.083519e-03
- [9,]  1.672798e-17  3.523024e-05 -2.636468e-04  2.083565e-03 -1.651536e-02
-[10,] -1.311232e-16 -2.636468e-04  2.083519e-03 -1.651536e-02  1.309342e-01
+ [1,]  5.078843e-01 -5.368288e-20  6.132222e-19 -8.596957e-18  4.168205e-17
+ [2,] -4.869281e-18  6.546717e-05 -5.169117e-04  4.099509e-03 -3.251829e-02
+ [3,]  3.869230e-17 -5.169117e-04  4.099509e-03 -3.251829e-02  2.579464e-01
+ [4,]  4.099509e-03 -8.760306e-22  5.922014e-21 -7.561097e-20  3.637811e-19
+ [5,] -3.251829e-02  3.334345e-21 -3.945749e-20  5.562050e-19 -2.679651e-18
+ [6,]  2.579464e-01 -2.733149e-20  3.115810e-19 -4.365337e-18  2.117568e-17
+ [7,] -2.733149e-20  1.639651e-06 -4.565089e-06  5.082460e-05 -2.731624e-04
+ [8,]  3.115810e-19 -4.565089e-06  5.083485e-05 -2.731624e-04  8.035985e-03
+ [9,] -4.365337e-18  5.082460e-05 -2.731624e-04  8.035995e-03 -1.926994e-02
+[10,]  2.117568e-17 -2.731624e-04  8.035985e-03 -1.926994e-02  2.231173e+00
 
 $varDim
 [1] 2
@@ -104,21 +106,39 @@ $varDim
 $order
 [1] 6
 
-$largeRank
-[1] 2
-
-$smallRank
-[1] 1
-
 $certificate
-[1] FALSE
+[1] TRUE
+
+$rank
+[1] 2
 
 $hierarchy
 [1] 1
 ```
 
-`objective_primal` and `objective_dual` record global minimum (they are equal when there is no error). `sdpstatus` and `solstatus` record status of SDP solution, which is produced by [Mosek](https://www.mosek.com/). 
+`objective_primal` and `objective_dual` record values of the SDP primal and dual objectives, and they are equal when no error occured in solving SDP.
 
+`sdpstatus` and `solstatus` record status of SDP solution, which is produced by [Mosek](https://www.mosek.com/).
+
+`certificate` record whether criterion for certificate of optimality has met. If `TRUE`, then `objective_primal` (which equals to `objective_dual`) is the exact global minimum. If `FALSE`, then `min(objective_primal, objective_dual)` is a lower bound for the global minimum.
+
+If `certificate=TRUE`, then `rank` represents the number of optimizers. The optimizers can be extracted by the `extractSolution` function in **optpoly**.
+
+`hierarchy` records the number of SDP models solved to obtain current output, which is similar to the number of iterations in local optimization problems. By default, `optpoly` solves only one SDP. This may result in `certificate=FALSE`, in which case one should increase the number of iterations in order to obtain exact solution. Specify `opt=list(hierarchy=3)` for example to increase it.
+
+To extract optimizers from the SDP solution, type
+
+```r
+extractSolution(sol)
+```
+
+The output is a matrix where each row represents an optimizer. The output below tells that `(-0.08984222, 0.7126597)` and `(0.08984222 -0.7126597)` are global minimizers of `f(x1,x2)`.
+
+```r
+            [,1]       [,2]
+[1,] -0.08984222  0.7126597
+[2,]  0.08984222 -0.7126597
+```
 
 ### References
 

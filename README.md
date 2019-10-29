@@ -13,7 +13,7 @@ Mosek offers free license to academic users. To install Mosek and its R interfac
 To install **optpoly**, type
 
 ```r
-install.packages("https://wooyong.github.io/data/packages/optpoly_2019.10.24.tar.gz", repos=NULL, type="source")
+install.packages("https://wooyong.github.io/data/packages/optpoly_1.0.0.tar.gz", repos=NULL, type="source")
 ```
 
 Alternatively, to install **optpoly** directly from source on Github, type
@@ -122,19 +122,23 @@ If `certificate=TRUE`, then `rank` represents the number of optimizers. The opti
 
 `hierarchy` records the number of SDP models solved to obtain current output, which is similar to the number of iterations in local optimization problems. By default, `optpoly` solves only **one** SDP. This may result in `certificate=FALSE`, in which case one should increase the number of iterations in order to obtain exact solution. Specify `opt=list(hierarchy=3)` for example to increase it.
 
+For more details, type `?optpoly` in R.
+
 To extract optimizers from the SDP solution, type
 
 ```r
 extractSolution(sol)
 ```
 
-The output is a matrix where each row represents an optimizer. The output below tells that `(-0.08984222, 0.7126597)` and `(0.08984222 -0.7126597)` are global minimizers of `f(x1,x2)`.
+The output is a matrix where each row represents an optimizer. The output of `extractSolution` below tells that `(-0.08984222, 0.7126597)` and `(0.08984222 -0.7126597)` are global minimizers of `f(x1,x2)`.
 
 ```r
             [,1]       [,2]
 [1,] -0.08984222  0.7126597
 [2,]  0.08984222 -0.7126597
 ```
+
+For more details, type `?extractSolution` in R.
 
 ### References
 

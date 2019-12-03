@@ -8,7 +8,7 @@ Global Optimization of Many Polynomials
 Globally optimize many polynomials of same dimension and same degree.
 }
 \usage{
-optmanypoly(sense, coefMatrix, varDim, orderObj, orderMom, constrained, radius = NULL, multithread, verbose)
+optmanypoly(sense, coefMatrix, varDim, orderObj, orderMom, opt = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -27,27 +27,27 @@ degree of polynomials in \code{coefMatrix}.
   \item{orderMom}{
 degree of semidefinite relaxation problems.
 }
-  \item{constrained}{
-\code{0} if optimization is over R^n space, \code{1} if optimization is over a sphere of length \code{radius}.
-}
-  \item{radius}{
-a positive real number. If supplied and \code{constrained = 1}, the domain of the polynomial is restricted to be in the sphere of length \code{radius}.
-}
-  \item{multithread}{
-an indicator for whether to allow for multithreading to solve SDPs.
-}
-  \item{verbose}{
-an integer that is passed to the SDP solver Mosek. If positive, Mosek will print its output on the R console.
+  \item{opt}{
+a list of options.
 }
 }
 \details{
 This function solves global optimization problems of many polynomials of same dimension and degree, using the same level of semidefinite programming (SDP) relaxation. Each row of \code{coefMatrix} represents a polynomial, and the coefficients must be arranged in the same order as \code{createMomentMatrixSparse(varDim, orderMom)}. This function does not check certificate of optimality.
+The user can specify the following options:
+\describe{
+\item{\code{radius}}{a positive real number. If supplied, the domain of the polynomial is restricted to be in the sphere of length \code{radius}. If omitted, the domain is assumed to be the entire Euclidean space.}
+\item{\code{multithread}}{number of threads used to solve SDPs. Default is \code{1}.}
+\item{\code{verbose}}{an integer that is passed to the SDP solver Mosek. If positive, Mosek will print its output on the R console. Default is \code{0}.}
+\item{\code{fabstol}}{absolute tolerance for function value used for certificate of solution. Default is \code{1e-10}.}
+\item{\code{freltol}}{relative tolerance for function value used for certificate of solution. Default is \code{1e-06}.}
+}
 }
 \value{
 \item{objective_primal}{a vector of primal objectives of the SDPs}
 \item{objective_dual}{a vector of dual objective of the SDPs}
 \item{sdpstatus}{a vector of status of the SDPs}
 \item{solstatus}{a vector of status of the SDP solutions}
+\item{certificate}{certificate for exact solution}
 \item{varDim}{dimension of polynomials}
 \item{orderObj}{degree of polynomials in \code{coefMatrix}}
 \item{orderMom}{degree of semidefinite relaxation problems}

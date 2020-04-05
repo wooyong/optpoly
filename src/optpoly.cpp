@@ -22,6 +22,219 @@ int choose_cpp(int n, int k) {
 }
 
 // [[Rcpp::export]]
+NumericVector getPrimes_cpp(int n) {
+
+    /*
+
+    Returns a vector of prime numbers less than or equal to n
+
+    */
+
+    if(n <= 2) {
+        // closed form return value
+        return NumericVector::create(2);
+    } else if(n <= 3) {
+        // closed form return value
+        return NumericVector::create(2,3);
+    } else {
+        /*
+            implement Sieve of Eratosthenes
+        */
+        
+        // initialize flags
+        IntegerVector flags(n); // = 1 means non-prime
+        flags(0) = 1; // 1 is not a prime
+
+        // define auxiliary variables
+        int k, l;
+
+        // implement the Sieve
+        for(k=2; k <= static_cast<int>(std::pow(static_cast<double>(n), 0.5)); k++) {
+            if(flags(k-1) == 0) {
+                for(l=2; l <= static_cast<int>(n/k); l++) {
+                    flags(k*l - 1) = 1;
+                }
+            }
+        }
+
+        // return primes
+        IntegerVector numberSequence = seq_len(n);
+        return as<NumericVector>(numberSequence[flags == 0]);
+    }
+}
+
+// [[Rcpp::export]]
+NumericMatrix matrixToSparseTriplet_cpp(NumericMatrix mat, bool lowerTriangular) {
+
+    /*
+
+    Convert matrix into sparse triplet form
+
+    */
+
+    // read dimensions
+    int nrow = mat.nrow();
+    int ncol = mat.ncol();
+
+    // initialize triplet
+    std::vector<double> rows, cols, vals;
+
+    // initialize indices
+    int i, j;
+
+    // record matrix elements in triplet form
+    if(lowerTriangular == true) {
+
+        for(j=1; j<=ncol; j++) {
+            for(i=j; i<=nrow; i++) {
+                rows.push_back(i);
+                cols.push_back(j);
+                vals.push_back(mat(i-1,j-1));
+            }
+        }
+
+    } else {
+
+        for(j=1; j<=ncol; j++) {
+            for(i=1; i<=nrow; i++) {
+                rows.push_back(i);
+                cols.push_back(j);
+                vals.push_back(mat(i-1,j-1));
+            }
+        }
+
+    }
+
+    // create and fill triplet matrix
+    NumericMatrix matTriplet(rows.size(), 3);
+    for(unsigned int k=0; k<rows.size(); k++) {
+        matTriplet(k,0) = rows[k];
+        matTriplet(k,1) = cols[k];
+        matTriplet(k,2) = vals[k];
+    }
+
+    // return value
+    return matTriplet;
+}
+
+// [[Rcpp::export]]
+NumericMatrix vecToMatrix_cpp(NumericVector vectorOfEntries, int dimMatrix, bool lowerTriangular) {
+
+    /*
+
+    Convert matrix entries vector into actual matrix form
+
+    */
+
+    // initialize matrix
+    NumericMatrix restoredMatrix(dimMatrix, dimMatrix);
+
+    // define auxiliary variables
+    int i, j, k;
+
+    if(lowerTriangular == 0) {
+
+        // check length of vector equals number of matrix entries
+        if(static_cast<int>(vectorOfEntries.size()) != dimMatrix*dimMatrix) { stop("length of vector does not match matrix dimension."); }
+
+        // fill in the matrix
+        k=0;
+        for(j=1; j<=dimMatrix; j++) {
+            for(i=1; i<=dimMatrix; i++) {
+                restoredMatrix(i-1,j-1) = vectorOfEntries(k);
+                k++;
+            }
+        }
+
+    } else {
+
+        // check length of vector equals number of matrix entries
+        if(static_cast<int>(vectorOfEntries.size()) != dimMatrix*(dimMatrix+1)/2) { stop("length of vector does not match matrix dimension."); }
+
+        // fill in the lower triangular part
+        k=0;
+        for(j=1; j<=dimMatrix; j++) {
+            for(i=j; i<=dimMatrix; i++) {
+                restoredMatrix(i-1,j-1) = vectorOfEntries(k);
+                k++;
+            }
+        }
+
+        // fill in the upper triangular part
+        for(j=1; j<=dimMatrix; j++) {
+            for(i=1; i<=j; i++) {
+                restoredMatrix(i-1, j-1) = restoredMatrix(j-1, i-1);
+            }
+        }
+    }
+
+    // return matrix
+    return restoredMatrix;
+}
+
+// [[Rcpp::export]]
+NumericMatrix columnEchelon_cpp(NumericMatrix mat) {
+
+    // read dimensions
+    int dCol = mat.ncol();
+    int dRow = mat.nrow();
+
+    // initialize echelon form
+    NumericMatrix ech = clone(mat);
+
+    // initialize iterators
+    int i, j, jprime, k;
+
+    // initialize auxiliary variables
+    int flag, firstRow, firstCol;
+    double tempVal;
+
+    // compute column echelon form
+    for(j=1; j<=dCol; j++) {
+        // in the submatrix ech[,j:dCol], search for the first row and column where first nonzero entry appears
+        flag = 0;
+        firstRow = 0;
+        firstCol = 0;
+        for(i=1; i<=dRow; i++) {
+            if(flag == 0) {
+                for(k=j; k<=dCol; k++) {
+                    if(ech(i-1,k-1) != 0) { firstRow = i; firstCol = k; flag = 1; }
+                }
+            }
+        }
+        // if everything is zero, exit
+        if(flag == 0) {
+            return(ech);
+        } else {
+            // else, set leading entry to 1
+            // first, move nonzero column to the leading position - first elementary column operation
+            for(i=1; i<=dRow; i++) {
+                tempVal = ech(i-1,j-1);
+                ech(i-1,j-1) = ech(i-1,firstCol-1);
+                ech(i-1,firstCol-1) = tempVal;
+            }
+            // rescale leading entry to 1 - second elementary column operation
+            ech(_,j-1) = ech(_,j-1) / ech(firstRow-1,j-1);
+            // eliminate leading entries in other columns
+            for(jprime=1; jprime <= dCol; jprime++) {
+                if(jprime != j) {
+                    if(ech(firstRow-1,jprime-1) != 0) {
+                        // perform third elementary column operation
+                        tempVal = ech(firstRow-1, jprime-1);
+                        for(i=1; i<=dRow; i++) {
+                            ech(i-1,jprime-1) = ech(i-1,jprime-1) - ech(i-1,j-1) * tempVal;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // return column echelon form
+    return(ech);
+}
+
+// [[Rcpp::export]]
 int degreeToMonomial_cpp(NumericVector degree, NumericVector monomialPrimes) {
 
     // initialize identifier
@@ -223,8 +436,8 @@ List createMosekSdpCoefficientMatrixFromMonomials_cpp(NumericVector coefs, Numer
 }
 
 // [[Rcpp::export]]
-List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, NumericVector isConstrained, NumericVector radius,
-                                     NumericVector monomialPrimes, NumericMatrix momentMatrixSparse) {
+List createMosekSdpModelSkeletonLasserre_cpp(NumericVector nvar, NumericVector order, NumericVector isConstrained, NumericVector isRectangular, 
+                                             NumericMatrix bounds, NumericVector radius, NumericVector monomialPrimes, NumericMatrix momentMatrixSparse) {
 
     /*
 
@@ -376,6 +589,64 @@ List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, Nu
 
     /*
 
+    Now suppose that the domain is given in a rectangular form, i.e. {(x,y) | l_x <= x <= u_x, l_y <= y <= u_y} for some real numbers l_x, u_x, l_y, u_y
+        such that this domain is a subset of the circular domain {(x,y) | x^2 + y^2 <= R^2} defined previously.
+
+    Define
+
+        Z1 = x * M' - l_x * M'
+        Z2 = y * M' - l_y * M'
+        Z3 = u_x * M' - x * M'
+        Z4 = u_y * M' - y * M'
+
+    that is,
+
+        Z1[1,1] = x  - l_x,
+        Z1[2,1] = x^2 - l_x * x,
+        ...,
+        Z1[3,3] = x*y^2 - l_x * y^2,
+        ...,
+        Z4[1,1] = u_y - y,
+        Z4[2,1] = u_y * x - x*y,
+        ...,
+        Z4[3,3] = u_y * y^2 - y^3.
+
+    Then the additional constraints are that the matrices Z1, Z2, Z3, Z4 are positive semidefinite.
+
+    So, in the standard form, the SDP problem for polynomial optimization on the bounded domain is
+
+        n = 1, p = 2, r_1 = 6, r_2 = 3, r_3 = r_4 = r_5 = r_6 = 3,
+
+        minimize        0 * x_1 + tr<C, X1> + tr<0, X2> + tr<0, X3> + tr<0, X4> + tr<0, X5> + tr<0, X6>
+
+        by choosing     x_1, X1, X2, X3, X4, X5 and X6
+
+        subject to      X1[1,1] = 1,                                            The value of the zero-order monomial must be 1.
+                        X1[4,1] - X1[2,2] = 0,                                  The monomial 'x2' appears multiple times in M, and their values must be equal.
+                        X1[5,1] - X1[3,2] = 0,                                  The monomial 'xy' appears multiple times in M, and their values must be equal.
+                        ...,
+                        X1[6,2] - X1[5,3] = 0,                                  The monomial 'xy2' appears multiple times in M, and their values must be equal.
+                        X2[1,1] - R^2 * X1[1,1] + X1[4,1] + X1[6,1] = 0,        Y[1,1] := R^2 * 1 - x^2 - y^2.
+                        X2[2,1] - R^2 * X1[2,1] + X1[4,2] + X1[5,3] = 0,        Y[2,1] := R^2 * x - x^3 - x*y^2.
+                        ...,
+                        X2[3,3] - R^2 * X1[3,3] + X1[6,4] + X1[6,6] = 0,        Y[3,3] := R^2 * y^2 - x^2*y^2 - y^4.
+                        X3[1,1] - X1[2,1] + l_x * X1[1,1] = 0,                  Z1[1,1]:= x - l_x.
+                        X3[2,1] - X1[4,1] + l_x * X1[2,1] = 0,                  Z1[2,1]:= x^2 - l_x * x.
+                        ...,
+                        X6[1,1] + X1[3,1] - u_y * X1[1,1]  = 0,                  Z4[1,1]:= u_y - y.
+                        ...,
+                        X6[3,3] + X1[6,3] - u_y * X1[6,1]  = 0,                  Z4[3,3]:= u_y * y^2 - y^3.
+                        X1 is positive semidefinite,
+                        X2 is positive semidefinite,
+                        X3 is positive semidefinite,
+                        X4 is positive semidefinite,
+                        X5 is positive semidefinite,
+                        X6 is positive semidefinite.
+
+    */
+
+    /*
+
     Now we write the SDP formulation of the polynomial optimization problem
         in the structure that Mosek can understand.
 
@@ -402,6 +673,9 @@ List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, Nu
     Also, if the problem is on a bounded domain,
         we additionally have dim' + choose(dim',2) = dim'*(dim'+1)/2 constraints.
 
+    In addition, if the domain is rectangular,
+        we additionally have another 2 * nvar * (dim' + choose(dim',2)) = 2*nvar*dim'*(dim'+1)/2 constraints.
+
     To code the constraints in the structure that Mosek can understand, 
         we also need to compute the number of nonzero entries of the coefficient matrix
         appearing in the constraints.
@@ -409,7 +683,8 @@ List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, Nu
     The number of nonzero entries are computed as follows:
         First, there is one nonzero entry in the constraint which is X[1,1] = 1.
         Second, there are two nonzero entries for each equivalence-of-monomial-values constraints.
-        Third, there are (2+nvar) nonzero entries for each localizing matrix constraints.
+        Third, there are (2+nvar) nonzero entries for each constraint for localizing matrix of the circular domain.
+        Fourth, there are 3 nonzero entries for each constraint for localizing matrix of the rectangular domain.
 
     */
 
@@ -418,6 +693,7 @@ List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, Nu
 
     // record if the problem is on a bounded domain
     int iConstrained = isConstrained(0);
+    int iRectangular = isRectangular(0);
 
     // compute the number of monomials up to _order_ -th order in _nvar_ variables
     int nMonomials = choose_cpp(static_cast<int>(nvar(0) + evenOrder), static_cast<int>(nvar(0)));
@@ -431,12 +707,14 @@ List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, Nu
     int entriesInLocalizingMatrix = dimLocalizingMatrix * (dimLocalizingMatrix + 1) / 2;
     int nConstraints = 1 + 
                        entriesInMomentMatrix - nMonomials + 
-                       iConstrained * entriesInLocalizingMatrix;
+                       iConstrained * entriesInLocalizingMatrix +
+                       iRectangular * 2 * nvar(0) * entriesInLocalizingMatrix;
 
     // number of nonzero coefficient matrix entries in the constraints
     int nNonzeroEntries = 1 + 
                           2 * ( entriesInMomentMatrix - nMonomials ) +
-                          iConstrained * (2 + nvar(0)) * entriesInLocalizingMatrix;
+                          iConstrained * (2 + nvar(0)) * entriesInLocalizingMatrix +
+                          iRectangular * 3 * 2 * nvar(0) * entriesInLocalizingMatrix;
 
     // dimension of the scalar choice variable (x_1 in the standard form) is 1, so we don't define it.
     ///// int nScalarVariable = 1; /////
@@ -461,14 +739,19 @@ List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, Nu
     // lower and upper bounds for the scalar variable, which are zeros
     NumericMatrix bx(2,1);
 
-    // dimensions of matrix variables. Number of matrix variables change according to iConstrained = isConstrained(0).
+    // dimensions of matrix variables. Number of matrix variables change according to iConstrained = isConstrained(0) and iRectangular = isRectangular(0).
     NumericVector *bardim; // first define pointer and then assign values
     NumericVector bardimUnbounded = NumericVector::create(dimMomentMatrix);
-    NumericVector bardimBounded = NumericVector::create(dimMomentMatrix, dimLocalizingMatrix);
+    NumericVector bardimBoundedCircular = NumericVector::create(dimMomentMatrix, dimLocalizingMatrix);
+    NumericVector bardimBoundedRectangular(2+2*nvar(0), dimLocalizingMatrix); bardimBoundedRectangular(0) = dimMomentMatrix;
     if(iConstrained == 0) {
         bardim = &bardimUnbounded;
     } else {
-        bardim = &bardimBounded;
+        if(iRectangular == 0) {
+            bardim = &bardimBoundedCircular;
+        } else {
+            bardim = &bardimBoundedRectangular;
+        }
     }
 
     // coefficients on the matrix variable in the objective.
@@ -497,10 +780,8 @@ List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, Nu
 
     // define iterators and counters needed to enumerate the rest of the constraints
     int barAInd = 1;   // position in the bara vectors
-    int iInd = 2;      // counter for the constraint number
+    int iInd = 2;      // constraint number counter
     int j, k, l;
-    NumericVector momentId(1);
-    NumericVector momentIdPosition(1);
 
     /*
 
@@ -511,6 +792,10 @@ List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, Nu
     // enumerate unique elements in momentMatrix
     NumericVector momentVector = momentMatrixSparse(_,2);
     NumericVector uniqueMomentVector = unique(momentVector);
+
+    // define auxiliary variables used to write the constraints
+    NumericVector momentId(1);
+    NumericVector momentIdPosition(1);
 
     // impose equivalence for each entry in uniqueMomentVector
     for(k=0; k<uniqueMomentVector.size(); k++) {
@@ -559,7 +844,7 @@ List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, Nu
 
     If the optimization is on bounded domain, impose localizing matrix constraints.
 
-    We consider the bound that the arguments of the polynomial, denoted by x_1, ..., x_{nvar},
+    We first consider a circular bound, i.e. the bound that the arguments of the polynomial, denoted by x_1, ..., x_{nvar},
         are within some ball of the origin with radius R:
 
         x_1^2 + ... + x_{nvar}^2 <= R^2.
@@ -571,9 +856,9 @@ List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, Nu
     */
 
     // define auxiliary variables used to write the constraints
-    NumericVector squaredMomentId(1);
-    NumericVector squaredMomentIdPosition(1);
-    NumericMatrix squaredMomentIdsPositions(nvar(0), 2);
+    NumericVector multipliedMomentId(1);
+    NumericVector multipliedMomentIdPosition(1); // position in the momentMatrixSparse array
+    NumericMatrix multipliedMomentIdsPositions(nvar(0), 2); // row-column positions in the matrix
 
     if(iConstrained == 1) {
         // write constraint for each entry (k,l) of localizing matrix.
@@ -582,10 +867,10 @@ List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, Nu
             if(momentMatrixSparse(k,0) <= dimLocalizingMatrix) {
                 // search for the position of the term x_j^2 * M' in momentMatrixSparse
                 for(j=1; j<=nvar(0); j++) {
-                    squaredMomentId = momentMatrixSparse(k,2) * monomialPrimes(j-1) * monomialPrimes(j-1);
-                    squaredMomentIdPosition = match(squaredMomentId, momentVector) - 1;
-                    squaredMomentIdsPositions(j-1,0) = momentMatrixSparse(squaredMomentIdPosition(0),0);
-                    squaredMomentIdsPositions(j-1,1) = momentMatrixSparse(squaredMomentIdPosition(0),1);
+                    multipliedMomentId = momentMatrixSparse(k,2) * monomialPrimes(j-1) * monomialPrimes(j-1);
+                    multipliedMomentIdPosition = match(multipliedMomentId, momentVector) - 1;
+                    multipliedMomentIdsPositions(j-1,0) = momentMatrixSparse(multipliedMomentIdPosition(0),0);
+                    multipliedMomentIdsPositions(j-1,1) = momentMatrixSparse(multipliedMomentIdPosition(0),1);
                 }
                 // record constraint
                 barA_i(barAInd) = iInd;
@@ -594,23 +879,107 @@ List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, Nu
                 barA_l(barAInd) = momentMatrixSparse(k,1);
                 // if off-diagonal, deflate the coefficient by half since the same is also copied to the upper-triangular part in Mosek
                 if(barA_k(barAInd) == barA_l(barAInd)) { barA_v(barAInd) = 1.0; } else { barA_v(barAInd) = 0.5; }
+
                 barA_i(barAInd+1) = iInd;
                 barA_j(barAInd+1) = 1;
                 barA_k(barAInd+1) = momentMatrixSparse(k,0);
                 barA_l(barAInd+1) = momentMatrixSparse(k,1);
                 // if off-diagonal, deflate the coefficient by half since the same is also copied to the upper-triangular part in Mosek
                 if(barA_k(barAInd+1) == barA_l(barAInd+1)) { barA_v(barAInd+1) = - radius(0) * radius(0); } else { barA_v(barAInd+1) = - radius(0) * radius(0) * 0.5; }
+
                 barAInd = barAInd + 2;
                 for(j=1; j<=nvar(0); j++) {
                     barA_i(barAInd) = iInd;
                     barA_j(barAInd) = 1;
-                    barA_k(barAInd) = squaredMomentIdsPositions(j-1,0);
-                    barA_l(barAInd) = squaredMomentIdsPositions(j-1,1);
+                    barA_k(barAInd) = multipliedMomentIdsPositions(j-1,0);
+                    barA_l(barAInd) = multipliedMomentIdsPositions(j-1,1);
                     // if off-diagonal, deflate the coefficient by half since the same is also copied to the upper-triangular part in Mosek
                     if(barA_k(barAInd) == barA_l(barAInd)) { barA_v(barAInd) = 1.0; } else { barA_v(barAInd) = 0.5; }
                     barAInd++;
                 }
                 iInd++;
+            }
+        }
+    }
+
+    /*
+
+    Next, consider a rectangular bound, saying that l_{x_1} <= x_1 <= u_{x_1}, ..., l_{x_{nvar}} <= x_{nvar} <= u_{x_{nvar}}.
+
+    The localizing matrices for these bounds are
+    
+        x_k * M' - l_{x_k} * M'
+        u_{x_k} * M' - x_k * M'
+
+    for each k = 1, ..., _nvar_.
+
+    */
+
+    if(iConstrained == 1 && iRectangular == 1) {
+        // write constraint for each entry (k,l) of localizing matrix.
+        // to enumerate, we loop over rows of momentMatrixSparse and write the constraint for the localizing matrix part of it.
+        for(k=0; k<momentMatrixSparse.nrow(); k++) {
+            if(momentMatrixSparse(k,0) <= dimLocalizingMatrix) {
+                // search for the position of the term x_j^2 * M' in momentMatrixSparse
+                for(j=1; j<=nvar(0); j++) {
+                    multipliedMomentId = momentMatrixSparse(k,2) * monomialPrimes(j-1) * monomialPrimes(j-1);
+                    multipliedMomentIdPosition = match(multipliedMomentId, momentVector) - 1;
+                    multipliedMomentIdsPositions(j-1,0) = momentMatrixSparse(multipliedMomentIdPosition(0),0);
+                    multipliedMomentIdsPositions(j-1,1) = momentMatrixSparse(multipliedMomentIdPosition(0),1);
+                }
+                // record constraints. For each j in 1, ..., _nvar_, record lower bound and upper bound constraints.
+                for(j=1; j<=nvar(0); j++) {
+
+                    // first create lower bound constraints
+
+                    barA_i(barAInd) = iInd;
+                    barA_j(barAInd) = 2 + 2*j - 1; // index for lower bound localizing matrix of j-th variable
+                    barA_k(barAInd) = momentMatrixSparse(k,0);
+                    barA_l(barAInd) = momentMatrixSparse(k,1);
+                    // if off-diagonal, deflate the coefficient by half since the same is also copied to the upper-triangular part in Mosek
+                    if(barA_k(barAInd) == barA_l(barAInd)) { barA_v(barAInd) = 1.0; } else { barA_v(barAInd) = 0.5; }
+
+                    barA_i(barAInd+1) = iInd;
+                    barA_j(barAInd+1) = 1;
+                    barA_k(barAInd+1) = multipliedMomentIdsPositions(j-1,0);
+                    barA_l(barAInd+1) = multipliedMomentIdsPositions(j-1,1);
+                    // if off-diagonal, deflate the coefficient by half since the same is also copied to the upper-triangular part in Mosek
+                    if(barA_k(barAInd+1) == barA_l(barAInd+1)) { barA_v(barAInd+1) = - 1.0; } else { barA_v(barAInd+1) = - 0.5; }
+
+                    barA_i(barAInd+2) = iInd;
+                    barA_j(barAInd+2) = 1;
+                    barA_k(barAInd+2) = momentMatrixSparse(k,0);
+                    barA_l(barAInd+2) = momentMatrixSparse(k,1);
+                    // if off-diagonal, deflate the coefficient by half since the same is also copied to the upper-triangular part in Mosek
+                    if(barA_k(barAInd+2) == barA_l(barAInd+2)) { barA_v(barAInd+2) = bounds(j-1,0); } else { barA_v(barAInd+2) = 0.5 * bounds(j-1,0); }
+                    iInd++;
+                    barAInd = barAInd + 3;
+
+                    // then create upper bound constraints
+
+                    barA_i(barAInd) = iInd;
+                    barA_j(barAInd) = 2 + 2*j; // index for upper bound localizing matrix of j-th variable
+                    barA_k(barAInd) = momentMatrixSparse(k,0);
+                    barA_l(barAInd) = momentMatrixSparse(k,1);
+                    // if off-diagonal, deflate the coefficient by half since the same is also copied to the upper-triangular part in Mosek
+                    if(barA_k(barAInd) == barA_l(barAInd)) { barA_v(barAInd) = 1.0; } else { barA_v(barAInd) = 0.5; }
+
+                    barA_i(barAInd+1) = iInd;
+                    barA_j(barAInd+1) = 1;
+                    barA_k(barAInd+1) = multipliedMomentIdsPositions(j-1,0);
+                    barA_l(barAInd+1) = multipliedMomentIdsPositions(j-1,1);
+                    // if off-diagonal, deflate the coefficient by half since the same is also copied to the upper-triangular part in Mosek
+                    if(barA_k(barAInd+1) == barA_l(barAInd+1)) { barA_v(barAInd+1) = 1.0; } else { barA_v(barAInd+1) = 0.5; }
+                    
+                    barA_i(barAInd+2) = iInd;
+                    barA_j(barAInd+2) = 1;
+                    barA_k(barAInd+2) = momentMatrixSparse(k,0);
+                    barA_l(barAInd+2) = momentMatrixSparse(k,1);
+                    // if off-diagonal, deflate the coefficient by half since the same is also copied to the upper-triangular part in Mosek
+                    if(barA_k(barAInd+2) == barA_l(barAInd+2)) { barA_v(barAInd+2) = - 1.0 * bounds(j-1,1); } else { barA_v(barAInd+2) = - 0.5 * bounds(j-1,1); }
+                    iInd++;
+                    barAInd = barAInd + 3;
+                }
             }
         }
     }
@@ -632,8 +1001,8 @@ List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, Nu
 }
 
 // [[Rcpp::export]]
-List createMosekSdpModelSkeletonWithGradientIdeals_cpp(NumericVector nvar, NumericVector orderObj, NumericVector orderMom,
-                                                       List gradientObj, NumericVector monomialPrimes, NumericMatrix momentMatrixSparse) {
+List createMosekSdpModelSkeletonNieetal_cpp(NumericVector nvar, NumericVector orderObj, NumericVector orderMom,
+                                            List gradientObj, NumericVector monomialPrimes, NumericMatrix momentMatrixSparse) {
 
     /*
 
@@ -1056,4 +1425,90 @@ List createMosekSdpModelSkeletonWithGradientIdeals_cpp(NumericVector nvar, Numer
                                                  _["l"] = barA_l,
                                                  _["v"] = barA_v));
 
+}
+
+//////////// functions for quadratic optimization //////////
+
+// [[Rcpp::export]]
+List createMosekQuadraticModelSkeleton_cpp(NumericVector coefs, NumericMatrix degrees, NumericVector monomialPrimes) {
+
+    // read dimensions
+    int nvar = degrees.ncol();
+    int nlen = degrees.nrow();
+
+    // define auxiliary variables
+    int i, j, k;
+
+    // convert degrees to monomials
+    std::vector<int> monomials;
+    for(i=0; i<nlen; i++) {
+        monomials.push_back(degreeToMonomial_cpp(degrees(i,_), monomialPrimes));
+    }
+
+    /*
+
+    Fill in the objective function components of the Mosek model
+
+    */
+
+    // initialize model components for objective function
+    NumericVector qObj_i, qObj_j, qObj_v;
+    NumericVector c(nvar);
+    NumericVector c0(1);
+
+    
+
+    // fill in the squares
+    for(i=1; i<=nvar; i++) {
+        // search for the position at the monomial vector
+        for(k=0; k<nlen; k++) {
+            if(monomialPrimes(i-1) * monomialPrimes(i-1) == monomials[k]) {
+                qObj_i.push_back(i);
+                qObj_j.push_back(i);
+                qObj_v.push_back(coefs(k) * 2);
+                break;
+            }
+        }
+    }
+
+    // fill in the cross products
+    for(i=1; i<=nvar-1; i++) {
+        for(j=i+1; j<=nvar; j++) {
+            // search for the position at the monomial vector
+            for(k=0; k<nlen; k++) {
+                if(monomialPrimes(i-1) * monomialPrimes(j-1) == monomials[k]) {
+                    qObj_i.push_back(j); // swap i and j to record on the lower triangular part
+                    qObj_j.push_back(i); // swap i and j to record on the lower triangular part
+                    qObj_v.push_back(coefs(k));
+                    break;
+                }
+            }
+        }
+    }
+
+    // fill in the first order coefficients
+    for(i=1; i<=nvar; i++) {
+        for(k=0; k<nlen; k++) {
+            if(monomialPrimes(i-1) == monomials[k]) {
+                c(i-1) = coefs(k);
+                break;
+            }
+        }
+    }
+
+    // fill in the objective constant
+    for(k=0; k<nlen; k++) {
+        if(1 == monomials[k]) {
+            c0(0) = coefs(k);
+            break;
+        }
+    }
+
+    // return model. Need to add constraints manually
+    return List::create(_["sense"] = CharacterVector::create("assign max or min, depending on the problem."),
+                        _["qobj"]  = List::create(_["i"] = qObj_i,
+                                                  _["j"] = qObj_j,
+                                                  _["v"] = qObj_v),
+                        _["c"]     = c,
+                        _["c0"]    = c0);
 }

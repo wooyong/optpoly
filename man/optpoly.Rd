@@ -26,9 +26,10 @@ a list of options.
 }
 }
 \details{
-This function solves global polynomial optimization with or without the constraint that the domain of the polynomial is in the sphere of the specified radius in \code{opt}. When unconstrained, this function implements Nie et al (2006)'s optimization method based on gradient ideals. It solves a hierarchy of semidefinite programs (SDP), or a sequence of SDPs, which converges to the exact solution. When constrained, this function implements Lasserre (2001)'s optimization method. It solves a hierarchy of SDPs which converges to the exact solution. The user can specify the following options:
+This function solves global polynomial optimization with or without the constraint that the domain of the polynomial is in a rectangle of the bounds or a sphere of the specified radius in \code{opt}. When unconstrained, this function implements Nie et al (2006)'s optimization method based on gradient ideals. When constrained, this function implements Lasserre (2001)'s optimization method. In both cases, a hierarchy of semidefinite programs (SDP), or a sequence of SDPs, is solved, which converges to the exact solution. The user can specify the following options:
 \describe{
-\item{\code{radius}}{a positive real number. If supplied, the domain of the polynomial is restricted to be in the sphere of length \code{radius}. If omitted, the domain is assumed to be the entire Euclidean space.}
+\item{\code{bounds}}{a matrix with \code{ncol(degrees)} rows and \code{2} columns. If supplied, the domain of the polynomial is restricted to be the rectangle with the first column being the lower bound vector and the second column being the upper bound vector. If omitted, the domain is assumed to be the entire Euclidean space.}
+\item{\code{radius}}{a positive real number. If supplied, the domain of the polynomial is restricted to be the sphere of length \code{radius}. If omitted, the domain is assumed to be the entire Euclidean space.}
 \item{\code{hierarchy}}{an integer that represents the length of hierarchy of semidefinite relaxations. Default is \code{1}.}
 \item{\code{multithread}}{an indicator for whether to allow for multithreading to solve SDPs. Default is \code{FALSE}.}
 \item{\code{verbose}}{an integer that is passed to the SDP solver Mosek. If positive, Mosek will print its output on the R console. Default is \code{0}.}
@@ -39,8 +40,8 @@ This function solves global polynomial optimization with or without the constrai
 }
 }
 \value{
-\item{objective_primal}{primal objective of the SDP}
-\item{objective_dual}{dual objective of the SDP}
+\item{objective_primal}{primal objective value of the SDP}
+\item{objective_dual}{dual objective value of the SDP}
 \item{sdpstatus}{status of the SDP}
 \item{solstatus}{status of the SDP solution}
 \item{momentmatrix}{optimal moment matrix}

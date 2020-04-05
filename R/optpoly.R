@@ -6,44 +6,7 @@ getPrimes = function(n) {
   # e.g. getPrimes(100) = c(2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97)
   ###################################################################################################
 
-  # if n is not numeric, return error
-  if(is.numeric(n) == FALSE) {
-    stop("the input must be numeric.")
-  }
-
-  # if n is not an integer, transform it to the integer
-  nn = as.integer(n)
-
-  # if nn is less than 4, directly return list of primes. Else, implement Sieve of Eratosthenes
-  if(nn < 4) {
-
-    if(nn < 2) {
-      return(NULL)
-    } else if(nn == 2) {
-      return(2)
-    } else if(nn == 3) {
-      return(c(2,3))
-    }
-
-  } else {
-
-    # initialize flags
-    flags = rep(TRUE, nn)
-
-    # 1 is not a prime
-    flags[1] = FALSE
-
-    # implement Sieve of Eratosthenes
-    for(k in 2:as.integer(sqrt(nn))) {
-      if(flags[k] == TRUE) {
-        flags[k * 2:as.integer(nn/k)] = FALSE
-      }
-    }
-
-    # return primes vector
-    return((1:nn)[flags])
-
-  }
+  return(getPrimes_cpp(n))
 }
 
 reldist = function(x, y) {
@@ -116,35 +79,38 @@ columnEchelon = function(mat) {
   # compute column echelon form using elementary column operations
   ##################################################################
 
-  # read number of columns and rows
-  dCol = ncol(mat)
-  dRow = nrow(mat)
-
-  # initialize echelon form
-  ech = mat
-
-  # set leading entries to be 1
-  for(j in 1:dCol) {
-    # read first row where nonzero entry appears
-    beginRow = match(TRUE, do.call(pmax, lapply(j:dCol, function(x) abs(ech[,x]))) > 0, nomatch = 0)
-    # if everything is zero, exit. If not, continue
-    if(beginRow == 0) { break }
-    # sort columns according to the descending order of the absolute values
-    ech[,j:dCol] = ech[,j-1+order(abs(ech[beginRow,j:dCol]), decreasing=TRUE)]
-    # scale the column so that the leading entry is 1
-    ech[,j] = ech[,j] / ech[beginRow,j]
-    # eliminate other entries in _beginRow_
-    for(jPrime in 1:dCol) {
-      if(jPrime != j) {
-        if(ech[beginRow,jPrime] != 0) {
-          ech[,jPrime] = ech[,jPrime] - ech[beginRow,jPrime] * ech[,j]
-        }
-      }
-    }
-  }
-
-  # return echelon form
-  return(ech)
+  # # read number of columns and rows
+  # dCol = ncol(mat)
+  # dRow = nrow(mat)
+  # 
+  # # initialize echelon form
+  # ech = mat
+  # 
+  # # set leading entries to be 1
+  # for(j in 1:dCol) {
+  #   # read first row where nonzero entry appears
+  #   beginRow = match(TRUE, do.call(pmax, lapply(j:dCol, function(x) abs(ech[,x]))) > 0, nomatch = 0)
+  #   # if everything is zero, exit. If not, continue
+  #   if(beginRow == 0) { break }
+  #   # sort columns according to the descending order of the absolute values
+  #   ech[,j:dCol] = ech[,j-1+order(abs(ech[beginRow,j:dCol]), decreasing=TRUE)]
+  #   # scale the column so that the leading entry is 1
+  #   ech[,j] = ech[,j] / ech[beginRow,j]
+  #   # eliminate other entries in _beginRow_
+  #   for(jPrime in 1:dCol) {
+  #     if(jPrime != j) {
+  #       if(ech[beginRow,jPrime] != 0) {
+  #         ech[,jPrime] = ech[,jPrime] - ech[beginRow,jPrime] * ech[,j]
+  #       }
+  #     }
+  #   }
+  # }
+  # 
+  # # return echelon form
+  # return(ech)
+  
+  # Above operations are wrapped in the function columnEchelon_cpp
+  return(columnEchelon_cpp(mat))
 }
 
 createMonomialVector = function(varDim, order) {
@@ -230,13 +196,12 @@ createMomentMatrixSparse = function(monomialVector) {
   # create moment matrix
   momentMatrix = createMomentMatrix(monomialVector)
 
-  # transform it into a sparse triplet format
-  momentMatrixSparse = data.frame(k=as.vector(row(momentMatrix)),
-                                  l=as.vector(col(momentMatrix)),
-                                  v=as.vector(momentMatrix))
-
+  # transform into sparse triplet format
   # only keep the lower triangular part since the matrix is symmetric
-  momentMatrixSparse = subset(momentMatrixSparse, k >= l)
+  momentMatrixSparse = matrixToSparseTriplet_cpp(momentMatrix, 1)
+
+  # label columns
+  colnames(momentMatrixSparse) = c("k","l","v")
 
   # return sparse matrix
   return(momentMatrixSparse)
@@ -247,20 +212,9 @@ restoreOptimalMomentMatrix = function(monomialSystem, optimalMomentVector) {
   ############################################################
   # restore optimal moment matrix from optimal moment vector
   ############################################################
-
-  # read dimension of moment matrix
-  dimMomentMatrix = length(monomialSystem$vec)
-
-  # initialize optimal moment matrix
-  optimalMomentMatrix = matrix(0, nrow=dimMomentMatrix, ncol=dimMomentMatrix)
-
-  # fill in the optimal moment matrix
-  optimalMomentMatrix[row(optimalMomentMatrix) >= col(optimalMomentMatrix)] = optimalMomentVector
-  optimalMomentMatrix = optimalMomentMatrix + t(optimalMomentMatrix)
-  diag(optimalMomentMatrix) = diag(optimalMomentMatrix) / 2
-
-  # return optimal moment matrix
-  return(optimalMomentMatrix)
+  
+  # transform to optimal moment matrix and return
+  return(vecToMatrix_cpp(optimalMomentVector, length(monomialSystem$vec), 1))
 }
 
 checkFlatExtension = function(optimalMomentMatrix, varDim, largeOrder, smallOrder, ereltol) {
@@ -269,17 +223,20 @@ checkFlatExtension = function(optimalMomentMatrix, varDim, largeOrder, smallOrde
   # check flat extension condition for certificate
   ##################################################
 
-  # create monomial vectors
-  largeMonomialSystem = createMonomialVector(varDim, largeOrder)
-  smallMonomialSystem = createMonomialVector(varDim, smallOrder)
-
-  # read monomial lengths
-  largeMonomialLen = length(largeMonomialSystem$vec) # choose(varDim+largeMonomialOrder, varDim)
-  smallMonomialLen = length(smallMonomialSystem$vec) # choose(varDim+smallMonomialOrder, varDim)
-
+  # # create monomial vectors
+  # largeMonomialSystem = createMonomialVector(varDim, largeOrder)
+  # smallMonomialSystem = createMonomialVector(varDim, smallOrder)
+  # # read monomial lengths
+  # largeMonomialLen = length(largeMonomialSystem$vec) # choose(varDim+largeMonomialOrder, varDim)
+  # smallMonomialLen = length(smallMonomialSystem$vec) # choose(varDim+smallMonomialOrder, varDim)
+  
+  # skip above steps and directly compute monomial length by formula
+  largeMonomialLen = choose(varDim+largeOrder, varDim)
+  smallMonomialLen = choose(varDim+smallOrder, varDim)
+  
   # extract large and small moment matrices
-  largeMatrix = as.matrix(optimalMomentMatrix[1:largeMonomialLen, 1:largeMonomialLen])
-  smallMatrix = as.matrix(optimalMomentMatrix[1:smallMonomialLen, 1:smallMonomialLen])
+  largeMatrix = optimalMomentMatrix[1:largeMonomialLen, 1:largeMonomialLen]
+  smallMatrix = optimalMomentMatrix[1:smallMonomialLen, 1:smallMonomialLen]
 
   # compute ranks
   largeRank = rankSymmetricMatrix(largeMatrix, ereltol)
@@ -302,7 +259,7 @@ checkFlatExtensions = function(optimalMomentMatrix, varDim, order, rankStep, ere
   }
 
   # if rank condition not satisfied, return FALSE and return smallRank of last rank check
-  return(certificate=FALSE, rank=check$smallRank)
+  return(list(certificate=FALSE, rank=check$smallRank))
 }
 
 checkEvaluation = function(coefs, degrees, objective_primal, objective_dual, optimizers, abstol, reltol) {
@@ -336,6 +293,44 @@ checkEvaluation = function(coefs, degrees, objective_primal, objective_dual, opt
 
 }
 
+checkCertificate = function(varDim, orderMom, coefs, degress, objective_primal, objective_dual, optimalMomentMatrix, options) {
+  
+  # first, perform evaluation test
+  
+  # extract optimizer assuming unique solution
+  uniqueOptimum = optimalMomentMatrix[-1, 1]
+  uniqueOptimum = matrix(uniqueOptimum, nrow=1, ncol=length(uniqueOptimum))
+  
+  # check evaluation
+  checkEval = checkEvaluation(coefs, degrees, objective_primal, objective_dual, uniqueOptimum, options$fabstol, options$freltol)
+  
+  # quit if pass evaluation test
+  if(checkEval == TRUE) { return(list(certificate = TRUE, rank = 1)) }
+  
+  # else, proceed to flat extension test
+  # max order is 1 for unconstrained optimization
+  # max order of g_j is also 1 for contrained optimization with the constraint radius^2 - sum_j x_j^2 >= 0
+  checkFlat = checkFlatExtensions(optimalMomentMatrix, varDim, orderMom, 1, options$ereltol)
+  
+  # quit if pass flat extension test
+  if(checkFlat$certificate == TRUE) { return(checkFlat) }
+  
+  # else, perform evaluation test using moment matrix rank as number of optimizers
+  
+  # extract optimizers
+  multipleOptima = extractSolution(list(varDim=varDim, order=orderMom, momentmatrix=optimalMomentMatrix), 
+                                   checkFlat$rank, options$vabstol, options$ereltol)
+  
+  checkEvalMultiple = checkEvaluation(coefs, degrees, objective_primal, objective_dual, multipleOptima, options$fabstol, options$freltol)
+  
+  # return final result
+  if(checkEvalMultiple == TRUE) {
+    return(list(certificate = TRUE, rank = checkFlat$rank))
+  } else {
+    return(checkFlat)
+  }
+}
+
 addLabelsToSkeleton = function(mosekModel, sense, multithread) {
 
   ####################################################################
@@ -355,6 +350,92 @@ addLabelsToSkeleton = function(mosekModel, sense, multithread) {
 
 }
 
+createOptionsList = function(opt=NULL) {
+  
+  # read options list
+  if(is.null(opt) == TRUE) {
+    options = list()
+  } else {
+    options = opt
+  }
+  
+  # read bounds or radius
+  if(is.null(options$bounds) == TRUE) {
+    if(is.null(options$radius) == TRUE) {
+      options$constrained = 0
+      options$rectangular = 0
+      options$bounds = matrix(0, nrow=1, ncol=1)
+      options$radius = 0
+    } else {
+      options$constrained = 1
+      options$rectangular = 0
+      options$bounds = matrix(0, nrow=1, ncol=1)
+      # options$radius = opt$radius
+    }
+  } else {
+    options$constrained = 1
+    options$rectangular = 1
+    # options$bounds = opt$bounds
+    if(is.null(options$radius) == TRUE) {
+      options$radius = max(abs(options$bounds))
+    } else {
+      # options$radius = opt$radius
+    }
+  }
+  
+  # read max length of hierarchy
+  if(is.null(options$hierarchy) == TRUE) {
+    options$hierarchy = 1
+  } else {
+    # options$hierarchy = opt$hierarchy
+  }
+  
+  # read multithreading option
+  if(is.null(options$multithread) == TRUE) {
+    options$multithread = FALSE
+  } else {
+    # multithread = options$multithread
+  }
+  
+  # read verbose option
+  if(is.null(options$verbose) == TRUE) {
+    options$verbose = 0
+  } else {
+    # verbose = options$verbose
+  }
+  
+  # absolute tolerance for simple certificate from function evaluations
+  if(is.null(options$fabstol) == TRUE) {
+    options$fabstol = 1e-10
+  } else {
+    # fabstol = options$fabstol
+  }
+  
+  # relative tolerance for simple certificate from function evaluations
+  if(is.null(options$freltol) == TRUE) {
+    options$freltol = 1e-06
+  } else {
+    # freltol = options$freltol
+  }
+  
+  # absolute tolerance for zero value
+  if(is.null(options$vabstol) == TRUE) {
+    options$vabstol = 1e-10
+  } else {
+    # vabstol = options$vabstol
+  }
+  
+  # relative eigenvalue tolerance for rank check
+  if(is.null(options$ereltol) == TRUE) {
+    options$ereltol = 1e-03
+  } else {
+    # ereltol = options$ereltol
+  }
+  
+  # return options list
+  return(options)
+}
+
 sdpmodel = function(sense, coefs, degrees, opt=NULL) {
 
   #################################################
@@ -362,48 +443,21 @@ sdpmodel = function(sense, coefs, degrees, opt=NULL) {
   #################################################
 
   # read options list
-  if(is.null(opt) == TRUE) {
-    options = list()
-  } else {
-    options = opt
-  }
-
-  # read radius
-  if(is.null(options$radius) == TRUE) {
-    constrained = 0
-    radius = 0
-  } else {
-    constrained = 1
-    radius = options$radius
-  }
-
-  # read max length of hierarchy
-  if(is.null(options$hierarchy) == TRUE) {
-    hierarchy = 1
-  } else {
-    hierarchy = options$hierarchy
-  }
-
-  # read multithreading option
-  if(is.null(options$multithread) == TRUE) {
-    multithread = FALSE
-  } else {
-    multithread = options$multithread
-  }
+  options = createOptionsList(opt)
 
   # read the dimension of the variables and the order of polynomial
   varDim = ncol(degrees)
   order = max(rowSums(degrees))
 
   # initialize list of models
-  models = vector("list", hierarchy)
+  models = vector("list", options$hierarchy)
 
-  if(constrained == 0) {
+  if(options$constrained == 0) {
 
     ########## if unconstrained, implement Nie et al's gradient ideal method
 
     # return error if order is odd and the problem is unconstrained
-    if(order %% 2 != 0 & constrained == 0) {
+    if(order %% 2 != 0 & options$constrained == 0) {
       stop("order of the polynomial must be multiples of two in unconstrained optimization")
     }
 
@@ -414,7 +468,7 @@ sdpmodel = function(sense, coefs, degrees, opt=NULL) {
     grad = computeGradient(coefs, degrees, monomialSystem$primes)
 
     # solve hierarchy of SDPs
-    for(j in 1:hierarchy) {
+    for(j in 1:(options$hierarchy)) {
 
       # set order at the hierarchy
       orderHierarchy = order + 2 * (j-1)
@@ -426,11 +480,11 @@ sdpmodel = function(sense, coefs, degrees, opt=NULL) {
       momentMatrixSparse = as.matrix(createMomentMatrixSparse(monomialSystem$vec))
 
       # create mosek model skeleton
-      model = createMosekSdpModelSkeletonWithGradientIdeals_cpp(varDim, order, orderHierarchy, grad,
-                                                                monomialSystem$primes, momentMatrixSparse)
+      model = createMosekSdpModelSkeletonNieetal_cpp(varDim, order, orderHierarchy, grad,
+                                                     monomialSystem$primes, momentMatrixSparse)
 
       # add labels to skeleton
-      model = addLabelsToSkeleton(model, sense, multithread)
+      model = addLabelsToSkeleton(model, sense, options$multithread)
 
       # record objective polynomial coefficients
       model$barc = createMosekSdpCoefficientMatrixFromDegrees_cpp(coefs, degrees, monomialSystem$primes, momentMatrixSparse)
@@ -445,7 +499,7 @@ sdpmodel = function(sense, coefs, degrees, opt=NULL) {
     ########## if constrained, implement Lasserre's localizing matrix method
 
     # solve hierarchy of SDPs
-    for(j in 1:hierarchy) {
+    for(j in 1:(options$hierarchy)) {
 
       # set order at the hierarchy
       orderHierarchy = order + 2 * (j-1)
@@ -457,10 +511,11 @@ sdpmodel = function(sense, coefs, degrees, opt=NULL) {
       momentMatrixSparse = as.matrix(createMomentMatrixSparse(monomialSystem$vec))
 
       # create mosek model skeleton
-      model = createMosekSdpModelSkeleton_cpp(varDim, orderHierarchy, constrained, radius, monomialSystem$primes, momentMatrixSparse)
+      model = createMosekSdpModelSkeletonLasserre_cpp(varDim, orderHierarchy, options$constrained, options$rectangular, options$bounds,
+                                                      options$radius, monomialSystem$primes, momentMatrixSparse)
 
       # add labels to skeleton
-      model = addLabelsToSkeleton(model, sense, multithread)
+      model = addLabelsToSkeleton(model, sense, options$multithread)
 
       # record objective polynomial coefficients
       model$barc = createMosekSdpCoefficientMatrixFromDegrees_cpp(coefs, degrees, monomialSystem$primes, momentMatrixSparse)
@@ -483,69 +538,7 @@ optpoly = function(sense, coefs, degrees, opt=NULL) {
   ########################################
 
   # read options list
-  if(is.null(opt) == TRUE) {
-    options = list()
-  } else {
-    options = opt
-  }
-
-  # read radius
-  if(is.null(options$radius) == TRUE) {
-    constrained = 0
-    radius = 0
-  } else {
-    constrained = 1
-    radius = options$radius
-  }
-
-  # read max length of hierarchy
-  if(is.null(options$hierarchy) == TRUE) {
-    hierarchy = 1
-  } else {
-    hierarchy = options$hierarchy
-  }
-
-  # read multithreading option
-  if(is.null(options$multithread) == TRUE) {
-    multithread = FALSE
-  } else {
-    multithread = options$multithread
-  }
-
-  # read verbose option
-  if(is.null(options$verbose) == TRUE) {
-    verbose = 0
-  } else {
-    verbose = options$verbose
-  }
-
-  # absolute tolerance for simple certificate from function evaluations
-  if(is.null(options$fabstol) == TRUE) {
-    fabstol = 1e-10
-  } else {
-    fabstol = options$fabstol
-  }
-
-  # relative tolerance for simple certificate from function evaluations
-  if(is.null(options$freltol) == TRUE) {
-    freltol = 1e-06
-  } else {
-    freltol = options$freltol
-  }
-
-  # absolute tolerance for zero value
-  if(is.null(options$vabstol) == TRUE) {
-    vabstol = 1e-10
-  } else {
-    vabstol = options$vabstol
-  }
-
-  # relative eigenvalue tolerance for rank check
-  if(is.null(options$ereltol) == TRUE) {
-    ereltol = 1e-03
-  } else {
-    ereltol = options$ereltol
-  }
+  options = createOptionsList(opt)
 
   # read the dimension of the variables and the order of polynomial
   varDim = ncol(degrees)
@@ -554,20 +547,20 @@ optpoly = function(sense, coefs, degrees, opt=NULL) {
   # create sdp models
   models = sdpmodel(sense, coefs, degrees, opt = opt)
 
-  if(constrained == 0) {
+  if(options$constrained == 0) {
 
-    ########## if unconstrained, implement gradient ideal method
+    ########## if unconstrained, implement gradient ideal method by Nie et al
 
     # return error if order is odd and the problem is unconstrained
-    if(order %% 2 != 0 & constrained == 0) {
+    if(order %% 2 != 0) {
       stop("order of the polynomial must be multiples of two in unconstrained optimization")
     }
 
     # solve hierarchy of SDPs
-    for(j in 1:hierarchy) {
+    for(j in 1:(options$hierarchy)) {
 
       # solve SDP
-      mosekSol = mosek(models[[j]]$model, opts = list(verbose=verbose, soldetail=1))
+      mosekSol = mosek(models[[j]]$model, opts = list(verbose=options$verbose, soldetail=1))
 
       # check if SDP returned error
       checkError = (substr(mosekSol$response$msg, 1, 11) == "MSK_RES_ERR")
@@ -585,31 +578,35 @@ optpoly = function(sense, coefs, degrees, opt=NULL) {
         # construct optimal moment matrix
         optimalMomentMatrix = restoreOptimalMomentMatrix(models[[j]]$monomialSystem, mosekSol$sol$itr$barx[[1]])
 
-        # check flat extension condition
-        # max order is 1 for unconstrained optimization
-        # max order of g_j is also 1 for contrained optimization with the constraint radius^2 - sum_j x_j^2 >= 0
-        check = checkFlatExtensions(optimalMomentMatrix, varDim, models[[j]]$monomialSystem$order*2, 1, ereltol)
+        # # check flat extension condition
+        # # max order is 1 for unconstrained optimization
+        # # max order of g_j is also 1 for contrained optimization with the constraint radius^2 - sum_j x_j^2 >= 0
+        # check = checkFlatExtensions(optimalMomentMatrix, varDim, models[[j]]$monomialSystem$order*2, 1, ereltol)
+        # 
+        # # check (heuristic) function evaluation criterion
+        # # first assume unique optimizer
+        # if(check$certificate == FALSE) {
+        #   check_eval = checkEvaluation(coefs, degrees, mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval,
+        #                                extractSolution(list(varDim=varDim, order=order, momentmatrix=optimalMomentMatrix), 1, vabstol, ereltol),
+        #                                fabstol, freltol)
+        #   # overwrite certificate if function evaluation criterion is met
+        #   if(check_eval == TRUE) { check$certificate = TRUE; check$rank = 1 }
+        # }
+        # # now use check$rank as number of solutions
+        # if(check$certificate == FALSE) {
+        #   check_eval = checkEvaluation(coefs, degrees, mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval,
+        #                                extractSolution(list(varDim=varDim, order=order, momentmatrix=optimalMomentMatrix), check$rank, vabstol, ereltol),
+        #                                fabstol, freltol)
+        #   # overwrite certificate if function evaluation criterion is met
+        #   if(check_eval == TRUE) { check$certificate = TRUE }
+        # }
+        
+        # check certificate. Above operations are wrapped in the function checkCertificate
+        check = checkCertificate(varDim, models[[j]]$monomialSystem$order*2, coefs, degrees, 
+                                 mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval, optimalMomentMatrix, options)
 
-        # check (heuristic) function evaluation criterion
-        # first assume unique optimizer
-        if(check$certificate == FALSE) {
-          check_eval = checkEvaluation(coefs, degrees, mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval,
-                                       extractSolution(list(varDim=varDim, order=order, momentmatrix=optimalMomentMatrix), 1, vabstol, ereltol),
-                                       fabstol, freltol)
-          # overwrite certificate if function evaluation criterion is met
-          if(check_eval == TRUE) { check$certificate = TRUE; check$rank = 1 }
-        }
-        # now use check$rank as number of solutions
-        if(check$certificate == FALSE) {
-          check_eval = checkEvaluation(coefs, degrees, mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval,
-                                       extractSolution(list(varDim=varDim, order=order, momentmatrix=optimalMomentMatrix), check$rank, vabstol, ereltol),
-                                       fabstol, freltol)
-          # overwrite certificate if function evaluation criterion is met
-          if(check_eval == TRUE) { check$certificate = TRUE }
-        }
-
-        # if condition holds or last hierarchy, record solution
-        if(check$certificate > 0 | j == hierarchy) {
+        # if certificate obtained or last hierarchy, record solution
+        if(check$certificate > 0 | j == options$hierarchy) {
           sol = list(objective_primal = mosekSol$sol$itr$pobjval,
                      objective_dual   = mosekSol$sol$itr$dobjval,
                      sdpstatus        = mosekSol$response$msg,
@@ -630,10 +627,10 @@ optpoly = function(sense, coefs, degrees, opt=NULL) {
     ########## if constrained, implement Lasserre's localizing matrix method
 
     # solve hierarchy of SDPs
-    for(j in 1:hierarchy) {
+    for(j in 1:(options$hierarchy)) {
 
       # solve SDP
-      mosekSol = mosek(models[[j]]$model, opts = list(verbose=verbose, soldetail=1))
+      mosekSol = mosek(models[[j]]$model, opts = list(verbose=options$verbose, soldetail=1))
 
       # check if SDP returned error
       checkError = (substr(mosekSol$response$msg, 1, 11) == "MSK_RES_ERR")
@@ -651,31 +648,35 @@ optpoly = function(sense, coefs, degrees, opt=NULL) {
         # construct optimal moment matrix
         optimalMomentMatrix = restoreOptimalMomentMatrix(models[[j]]$monomialSystem, mosekSol$sol$itr$barx[[1]])
 
-        # check flat extension condition
-        # max order is 1 for unconstrained optimization
-        # max order of g_j is also 1 for contrained optimization with the constraint radius^2 - sum_j x_j^2 >= 0
-        check = checkFlatExtensions(optimalMomentMatrix, varDim, models[[j]]$monomialSystem$order*2, 1, ereltol)
+        # # check flat extension condition
+        # # max order is 1 for unconstrained optimization
+        # # max order of g_j is also 1 for contrained optimization with the constraint radius^2 - sum_j x_j^2 >= 0
+        # check = checkFlatExtensions(optimalMomentMatrix, varDim, models[[j]]$monomialSystem$order*2, 1, ereltol)
+        # 
+        # # check (heuristic) function evaluation criterion
+        # # first assume unique optimizer
+        # if(check$certificate == FALSE) {
+        #   check_eval = checkEvaluation(coefs, degrees, mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval,
+        #                                extractSolution(list(varDim=varDim, order=order, momentmatrix=optimalMomentMatrix), 1, vabstol, ereltol),
+        #                                fabstol, freltol)
+        #   # overwrite certificate if function evaluation criterion is met
+        #   if(check_eval == TRUE) { check$certificate = TRUE; check$rank = 1 }
+        # }
+        # # now use check$rank as number of solutions
+        # if(check$certificate == FALSE) {
+        #   check_eval = checkEvaluation(coefs, degrees, mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval,
+        #                                extractSolution(list(varDim=varDim, order=order, momentmatrix=optimalMomentMatrix), check$rank, vabstol, ereltol),
+        #                                fabstol, freltol)
+        #   # overwrite certificate if function evaluation criterion is met
+        #   if(check_eval == TRUE) { check$certificate = TRUE }
+        # }
+        
+        # check certificate. Above operations are wrapped in the function checkCertificate
+        check = checkCertificate(varDim, models[[j]]$monomialSystem$order*2, coefs, degrees, 
+                                 mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval, optimalMomentMatrix, options)
 
-        # check (heuristic) function evaluation criterion
-        # first assume unique optimizer
-        if(check$certificate == FALSE) {
-          check_eval = checkEvaluation(coefs, degrees, mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval,
-                                       extractSolution(list(varDim=varDim, order=order, momentmatrix=optimalMomentMatrix), 1, vabstol, ereltol),
-                                       fabstol, freltol)
-          # overwrite certificate if function evaluation criterion is met
-          if(check_eval == TRUE) { check$certificate = TRUE; check$rank = 1 }
-        }
-        # now use check$rank as number of solutions
-        if(check$certificate == FALSE) {
-          check_eval = checkEvaluation(coefs, degrees, mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval,
-                                       extractSolution(list(varDim=varDim, order=order, momentmatrix=optimalMomentMatrix), check$rank, vabstol, ereltol),
-                                       fabstol, freltol)
-          # overwrite certificate if function evaluation criterion is met
-          if(check_eval == TRUE) { check$certificate = TRUE }
-        }
-
-        # if condition holds or last hierarchy, record solution
-        if(check$certificate > 0 | j == hierarchy) {
+        # if certificate obtained or last hierarchy, record solution
+        if(check$certificate > 0 | j == options$hierarchy) {
           sol = list(objective_primal = mosekSol$sol$itr$pobjval,
                      objective_dual   = mosekSol$sol$itr$dobjval,
                      sdpstatus        = mosekSol$response$msg,
@@ -1097,3 +1098,73 @@ extractSolution = function(sol, points=NULL, vabstol=1e-10, ereltol=1e-03) {
   # return solution
   return(argMat)
 }
+
+optquad = function(sense, coefs, degrees, constraints=NULL, opt=NULL) {
+  
+  # read options
+  if(is.null(opt) == TRUE) {
+    options = list()
+  } else {
+    options = opt
+  }
+  
+  if(is.null(options$multithread) == TRUE) {
+    options$multithread = FALSE
+  }
+  
+  if(is.null(options$verbose) == TRUE) {
+    options$verbose = 0
+  }
+  
+  # read constraints
+  if(is.null(constraints) == TRUE) {
+    constr = list()
+  } else {
+    constr = constraints
+  }
+  
+  # initialize Mosek model
+  monomialVector = createMonomialVector(ncol(degrees), 2)
+  model = createMosekQuadraticModelSkeleton_cpp(coefs, degrees, monomialVector$primes)
+  
+  # add labels to model skeleton
+  model$sense = sense
+  if(is.null(constr$A)  == FALSE) {
+    model$A  = Matrix(constr$A) # depends on Matrix package
+  } else {
+    model$A = Matrix(0, nrow=1, ncol=ncol(degrees))
+  }
+  if(is.null(constr$bc) == FALSE) {
+    model$bc = constr$bc
+  } else {
+    model$bc = matrix(0, nrow=2, ncol=1)
+  }
+  rownames(model$bc) = c("blc", "buc")
+  if(is.null(constr$bx) == FALSE) {
+    model$bx = constr$bx
+  } else {
+    model$bx = matrix(c(-Inf, Inf), nrow=2, ncol=ncol(degrees))
+  }
+  rownames(model$bx) = c("blx", "bux")
+  if(options$multithread == TRUE) {
+    model$iparam = list(MSK_IPAR_INTPNT_MULTI_THREAD = "MSK_ON") # turn on multithreading
+  } else {
+    model$iparam = list(MSK_IPAR_INTPNT_MULTI_THREAD = "MSK_OFF") # turn off multithreading
+  }
+  
+  # solve quadratic program
+  mosekSol = mosek(model, opts = list(verbose=options$verbose, soldetail=1))
+  
+  # return result
+  if(is.nan(mosekSol$response$code) == TRUE) {
+    sol = list(qpstatus = mosekSol$response$msg) # return error message if error occurred
+  } else {
+    sol = list(objective_primal = mosekSol$sol$itr$pobjval,
+               objective_dual   = mosekSol$sol$itr$dobjval,
+               qpstatus         = mosekSol$response$msg,
+               solstatus        = mosekSol$sol$itr$solsta,
+               solution         = mosekSol$sol$itr$xx)
+  }
+  return(sol)
+}
+

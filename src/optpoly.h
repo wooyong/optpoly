@@ -8,21 +8,21 @@ int choose_cpp(int n, int k);
 
 NumericVector getPrimes_cpp(int n);
 
-NumericMatrix matrixToSparseTriplet_cpp(NumericMatrix mat, bool lowerTriangular);
+NumericMatrix matrixToSparseTriplet_cpp(const NumericMatrix& mat, bool lowerTriangular);
 
-NumericMatrix vecToMatrix_cpp(NumericVector vectorOfEntries, int dimMatrix, bool lowerTriangular);
+NumericMatrix vecToMatrix_cpp(const NumericVector& vectorOfEntries, int dimMatrix, bool lowerTriangular);
 
-NumericMatrix columnEchelon_cpp(NumericMatrix mat);
+NumericMatrix columnEchelon_cpp(const NumericMatrix& mat);
 
-int degreeToMonomial_cpp(NumericVector degree, NumericVector monomialPrimes);
+int degreeToMonomial_cpp(const NumericVector& degree, const NumericVector& monomialPrimes);
 
-NumericMatrix monomialsToDegrees_cpp(NumericVector monomials, NumericVector monomialPrimes);
+NumericMatrix monomialsToDegrees_cpp(const NumericVector& monomials, const NumericVector& monomialPrimes);
 
-int determineMonomialPosition_cpp(NumericVector degree, NumericVector monomialPrimes, NumericVector momentVector);
+int determineMonomialPosition_cpp(const NumericVector& degree, const NumericVector& monomialPrimes, const NumericVector& momentVector);
 
-double evaluatePolynomial_cpp(NumericVector point, NumericVector coefs, NumericMatrix degrees);
+double evaluatePolynomial_cpp(const NumericVector& point, const NumericVector& coefs, const NumericMatrix& degrees);
 
-List computeDerivative_cpp(NumericVector coefs, NumericMatrix degrees, int dim, NumericVector monomialPrimes);
+List computeDerivative_cpp(const NumericVector& coefs, const NumericMatrix& degrees, int dim, const NumericVector& monomialPrimes);
 
 List createMosekSdpCoefficientMatrixFromDegrees_cpp(NumericVector coefs, NumericMatrix degrees, NumericVector monomialPrimes, NumericMatrix momentMatrixSparse);
 
@@ -35,5 +35,7 @@ List createMosekSdpModelSkeletonNieetal_cpp(NumericVector nvar, NumericVector or
                                             List gradientObj, NumericVector monomialPrimes, NumericMatrix momentMatrixSparse);
 
 List createMosekQuadraticModelSkeleton_cpp(NumericVector coefs, NumericMatrix degrees, NumericVector monomialPrimes);
+
+List createGurobiQuadraticModelSkeleton_cpp(NumericVector coefs, NumericMatrix degrees, NumericVector monomialPrimes);
 
 #endif

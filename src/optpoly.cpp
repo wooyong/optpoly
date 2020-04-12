@@ -2,6 +2,8 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+//////////// utility functions //////////
+
 // [[Rcpp::export]]
 int choose_cpp(int n, int k) {
 
@@ -64,7 +66,7 @@ NumericVector getPrimes_cpp(int n) {
 }
 
 // [[Rcpp::export]]
-NumericMatrix matrixToSparseTriplet_cpp(NumericMatrix mat, bool lowerTriangular) {
+NumericMatrix matrixToSparseTriplet_cpp(const NumericMatrix& mat, bool lowerTriangular) {
 
     /*
 
@@ -118,7 +120,7 @@ NumericMatrix matrixToSparseTriplet_cpp(NumericMatrix mat, bool lowerTriangular)
 }
 
 // [[Rcpp::export]]
-NumericMatrix vecToMatrix_cpp(NumericVector vectorOfEntries, int dimMatrix, bool lowerTriangular) {
+NumericMatrix vecToMatrix_cpp(const NumericVector& vectorOfEntries, int dimMatrix, bool lowerTriangular) {
 
     /*
 
@@ -173,7 +175,7 @@ NumericMatrix vecToMatrix_cpp(NumericVector vectorOfEntries, int dimMatrix, bool
 }
 
 // [[Rcpp::export]]
-NumericMatrix columnEchelon_cpp(NumericMatrix mat) {
+NumericMatrix columnEchelon_cpp(const NumericMatrix& mat) {
 
     // read dimensions
     int dCol = mat.ncol();
@@ -235,7 +237,7 @@ NumericMatrix columnEchelon_cpp(NumericMatrix mat) {
 }
 
 // [[Rcpp::export]]
-int degreeToMonomial_cpp(NumericVector degree, NumericVector monomialPrimes) {
+int degreeToMonomial_cpp(const NumericVector& degree, const NumericVector& monomialPrimes) {
 
     // initialize identifier
     double monomialID;
@@ -251,7 +253,7 @@ int degreeToMonomial_cpp(NumericVector degree, NumericVector monomialPrimes) {
 }
 
 // [[Rcpp::export]]
-NumericMatrix monomialsToDegrees_cpp(NumericVector monomials, NumericVector monomialPrimes) {
+NumericMatrix monomialsToDegrees_cpp(const NumericVector& monomials, const NumericVector& monomialPrimes) {
 
     // read dimension
     int P = monomials.size();
@@ -280,7 +282,7 @@ NumericMatrix monomialsToDegrees_cpp(NumericVector monomials, NumericVector mono
 }
 
 // [[Rcpp::export]]
-int determineMonomialPosition_cpp(NumericVector degree, NumericVector monomialPrimes, NumericVector momentVector) {
+int determineMonomialPosition_cpp(const NumericVector& degree, const NumericVector& monomialPrimes, const NumericVector& momentVector) {
 
     /*
 
@@ -306,7 +308,7 @@ int determineMonomialPosition_cpp(NumericVector degree, NumericVector monomialPr
 }
 
 // [[Rcpp::export]]
-double evaluatePolynomial_cpp(NumericVector point, NumericVector coefs, NumericMatrix degrees) {
+double evaluatePolynomial_cpp(const NumericVector& point, const NumericVector& coefs, const NumericMatrix& degrees) {
 
     // read dimension of variables
     int dim = degrees.ncol();
@@ -329,7 +331,7 @@ double evaluatePolynomial_cpp(NumericVector point, NumericVector coefs, NumericM
 }
 
 // [[Rcpp::export]]
-List computeDerivative_cpp(NumericVector coefs, NumericMatrix degrees, int dim, NumericVector monomialPrimes) {
+List computeDerivative_cpp(const NumericVector& coefs, const NumericMatrix& degrees, int dim, const NumericVector& monomialPrimes) {
 
     // read number of monomials
     int P = degrees.nrow();
@@ -352,6 +354,8 @@ List computeDerivative_cpp(NumericVector coefs, NumericMatrix degrees, int dim, 
     return List::create(_["coefs"] = dCoefs,
                         _["degrees"] = dDegrees);
 }
+
+//////////// functions for semidefinite optimization //////////
 
 // [[Rcpp::export]]
 List createMosekSdpCoefficientMatrixFromDegrees_cpp(NumericVector coefs, NumericMatrix degrees, NumericVector monomialPrimes, NumericMatrix momentMatrixSparse) {
@@ -1456,8 +1460,6 @@ List createMosekQuadraticModelSkeleton_cpp(NumericVector coefs, NumericMatrix de
     NumericVector c(nvar);
     NumericVector c0(1);
 
-    
-
     // fill in the squares
     for(i=1; i<=nvar; i++) {
         // search for the position at the monomial vector
@@ -1511,4 +1513,81 @@ List createMosekQuadraticModelSkeleton_cpp(NumericVector coefs, NumericMatrix de
                                                   _["v"] = qObj_v),
                         _["c"]     = c,
                         _["c0"]    = c0);
+}
+
+// [[Rcpp::export]]
+List createGurobiQuadraticModelSkeleton_cpp(NumericVector coefs, NumericMatrix degrees, NumericVector monomialPrimes) {
+
+    // read dimensions
+    int nvar = degrees.ncol();
+    int nlen = degrees.nrow();
+
+    // define auxiliary variables
+    int i, j, k;
+
+    // convert degrees to monomials
+    std::vector<int> monomials;
+    for(i=0; i<nlen; i++) {
+        monomials.push_back(degreeToMonomial_cpp(degrees(i,_), monomialPrimes));
+    }
+
+    /*
+
+    Fill in the objective function components of the Gurobi model
+
+    */
+
+    // initialize model components for objective function
+    NumericMatrix Q(nvar, nvar);
+    NumericVector c(nvar);
+    NumericVector c0(1);
+
+    // fill in the squares
+    for(i=1; i<=nvar; i++) {
+        // search for the position at the monomial vector
+        for(k=0; k<nlen; k++) {
+            if(monomialPrimes(i-1) * monomialPrimes(i-1) == monomials[k]) {
+                Q(i-1, i-1) = coefs(k);
+                break;
+            }
+        }
+    }
+
+    // fill in the cross products
+    for(i=1; i<=nvar-1; i++) {
+        for(j=i+1; j<=nvar; j++) {
+            // search for the position at the monomial vector
+            for(k=0; k<nlen; k++) {
+                if(monomialPrimes(i-1) * monomialPrimes(j-1) == monomials[k]) {
+                    Q(j-1, i-1) = coefs(k) / 2;
+                    Q(i-1, j-1) = coefs(k) / 2;
+                    break;
+                }
+            }
+        }
+    }
+
+    // fill in the first order coefficients
+    for(i=1; i<=nvar; i++) {
+        for(k=0; k<nlen; k++) {
+            if(monomialPrimes(i-1) == monomials[k]) {
+                c(i-1) = coefs(k);
+                break;
+            }
+        }
+    }
+
+    // fill in the objective constant
+    for(k=0; k<nlen; k++) {
+        if(1 == monomials[k]) {
+            c0(0) = coefs(k);
+            break;
+        }
+    }
+
+    // return model. Need to add constraints manually
+    return List::create(_["modelsense"] = CharacterVector::create("assign max or min, depending on the problem."),
+                        _["Q"]      = Q,
+                        _["obj"]    = c,
+                        _["objcon"] = c0);
 }

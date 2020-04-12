@@ -1,7 +1,7 @@
 Package: optpoly
 Type: Package
 Title: Global Polynomial Optimization
-Version: 1.1.0
+Version: 1.1.1
 Author: Wooyong Lee
 Maintainer: Wooyong Lee <wooyong@uchicago.edu>
 Description: Global polynomial optimization using semidefinite programming (SDP) methods
@@ -10,11 +10,11 @@ Description: Global polynomial optimization using semidefinite programming (SDP)
 License: MIT
 Encoding: UTF-8
 LazyData: true
-Depends:
-    Rmosek,
-    Matrix
 Imports: 
     Rcpp (>= 1.0.1),
-    foreach
+    foreach,
+    Rmosek,
+    Matrix,
+    gurobi
 LinkingTo: Rcpp
 ByteCompile: true

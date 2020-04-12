@@ -1099,7 +1099,7 @@ extractSolution = function(sol, points=NULL, vabstol=1e-10, ereltol=1e-03) {
   return(argMat)
 }
 
-optquad = function(sense, coefs, degrees, constraints=NULL, opt=NULL) {
+optquadMosek = function(sense, coefs, degrees, constraints=NULL, opt=NULL) {
   
   # read options
   if(is.null(opt) == TRUE) {
@@ -1168,3 +1168,66 @@ optquad = function(sense, coefs, degrees, constraints=NULL, opt=NULL) {
   return(sol)
 }
 
+optquadGurobi = function(sense, coefs, degrees, constraints=NULL, opt=NULL) {
+  
+  # read options
+  if(is.null(opt) == TRUE) {
+    options = list()
+  } else {
+    options = opt
+  }
+  
+  if(is.null(options$Threads) == TRUE) {
+    options$Threads = 0
+  }
+  
+  # if(is.null(options$OutputFlag) == TRUE) {
+  #   options$OutputFlag = 1 # can omit if OutputFlag = 1
+  # }
+  
+  # read constraints
+  if(is.null(constraints) == TRUE) {
+    constr = list()
+  } else {
+    constr = constraints
+  }
+  
+  # initialize Gurobi model
+  monomialVector = createMonomialVector(ncol(degrees), 2)
+  model = createGurobiQuadraticModelSkeleton_cpp(coefs, degrees, monomialVector$primes)
+  
+  # add labels to model skeleton
+  model$modelsense = sense
+  if(is.null(constr$A)  == FALSE) {
+    model$A  = Matrix(constr$A) # depends on Matrix package
+  } else {
+    model$A = Matrix(0, nrow=1, ncol=ncol(degrees))
+  }
+  if(is.null(constr$rhs) == FALSE) {
+    model$rhs = constr$rhs
+    model$sense = constr$sense
+  } else {
+    model$rhs = 0
+    model$sense = "="
+  }
+  
+  if(is.null(constr$lb) == FALSE) {
+    model$lb = constr$lb
+  }
+  if(is.null(constr$ub) == FALSE) {
+    model$ub = constr$ub
+  }
+  
+  # solve quadratic program
+  gurobiSol = gurobi(model, params = options)
+  
+  # return result
+  if(gurobiSol$status != "OPTIMAL" & gurobiSol$status != "SUBOPTIMAL") {
+    sol = list(qpstatus = gurobiSol$status) # return error message if error occurred
+  } else {
+    sol = list(objective = gurobiSol$objval,
+               qpstatus  = gurobiSol$status,
+               solution  = gurobiSol$x)
+  }
+  return(sol)
+}

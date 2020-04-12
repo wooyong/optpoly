@@ -1199,9 +1199,9 @@ optquadGurobi = function(sense, coefs, degrees, constraints=NULL, opt=NULL) {
   # add labels to model skeleton
   model$modelsense = sense
   if(is.null(constr$A)  == FALSE) {
-    model$A  = Matrix(constr$A) # depends on Matrix package
+    model$A  = constr$A
   } else {
-    model$A = Matrix(0, nrow=1, ncol=ncol(degrees))
+    model$A = Matrix(0, nrow=1, ncol=ncol(degrees)) # depends on Matrix package
   }
   if(is.null(constr$rhs) == FALSE) {
     model$rhs = constr$rhs

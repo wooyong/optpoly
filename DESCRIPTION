@@ -10,11 +10,12 @@ Description: Global polynomial optimization using semidefinite programming (SDP)
 License: MIT
 Encoding: UTF-8
 LazyData: true
-Imports: 
+Depends:
+    Matrix
+Imports:
     Rcpp (>= 1.0.1),
     foreach,
     Rmosek,
-    Matrix,
     gurobi
 LinkingTo: Rcpp
 ByteCompile: true

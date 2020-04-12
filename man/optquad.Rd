@@ -74,7 +74,7 @@ dg=matrix(c(2,0,0,2,1,1,1,0,0,1,0,0), nrow=6, ncol=2, byrow=TRUE)
 A=matrix(c(1,1), nrow=1, ncol=2)
 bc=matrix(c(-Inf,1), nrow=2, ncol=1)
 bx=matrix(c(-1,-1,1,1), nrow=2, ncol=2, byrow=TRUE)
-optquadMosek("min", cf, dg, constraints=list(A=A, bc=bc, bx=bx))
+optquad("min", cf, dg, constraints=list(A=A, bc=bc, bx=bx))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

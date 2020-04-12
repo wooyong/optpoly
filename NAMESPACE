@@ -3,7 +3,6 @@ export("createMonomialVector",
        "optpoly",
        "optmanypoly",
        "extractSolution",
-       "optquadMosek",
-       "optquadGurobi")
+       "optquad")
 importFrom(Rcpp, evalCpp)
 useDynLib(optpoly, .registration = TRUE)

@@ -1099,7 +1099,7 @@ extractSolution = function(sol, points=NULL, vabstol=1e-10, ereltol=1e-03) {
   return(argMat)
 }
 
-optquadMosek = function(sense, coefs, degrees, constraints=NULL, opt=NULL) {
+optquad = function(sense, coefs, degrees, constraints=NULL, opt=NULL) {
   
   # read options
   if(is.null(opt) == TRUE) {

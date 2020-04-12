@@ -1,5 +1,5 @@
-\name{optquadMosek}
-\alias{optquadMosek}
+\name{optquad}
+\alias{optquad}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Global Optimization of a Quadratic Polynomial

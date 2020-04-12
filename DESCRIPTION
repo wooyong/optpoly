@@ -14,8 +14,6 @@ Depends:
     Matrix
 Imports:
     Rcpp (>= 1.0.1),
-    foreach,
-    Rmosek,
-    gurobi
+    foreach
 LinkingTo: Rcpp
 ByteCompile: true

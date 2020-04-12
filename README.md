@@ -13,7 +13,7 @@ Mosek offers free license to academic users. To install Mosek and its R interfac
 To install **optpoly**, type
 
 ```r
-install.packages("https://wooyong.github.io/data/packages/optpoly_1.1.0.tar.gz", repos=NULL, type="source")
+install.packages("https://wooyong.github.io/data/packages/optpoly_1.1.1.tar.gz", repos=NULL, type="source")
 ```
 
 Alternatively, to install **optpoly** directly from source on Github, type

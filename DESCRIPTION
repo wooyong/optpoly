@@ -1,7 +1,7 @@
 Package: optpoly
 Type: Package
 Title: Global Polynomial Optimization
-Version: 1.1.1
+Version: 1.1.2
 Author: Wooyong Lee
 Maintainer: Wooyong Lee <wooyong@uchicago.edu>
 Description: Global polynomial optimization using semidefinite programming (SDP) methods

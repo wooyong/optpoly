@@ -293,7 +293,7 @@ checkEvaluation = function(coefs, degrees, objective_primal, objective_dual, opt
 
 }
 
-checkCertificate = function(varDim, orderMom, coefs, degress, objective_primal, objective_dual, optimalMomentMatrix, options) {
+checkCertificate = function(varDim, orderMom, coefs, degrees, objective_primal, objective_dual, optimalMomentMatrix, options) {
   
   # first, perform evaluation test
   

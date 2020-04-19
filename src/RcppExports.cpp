@@ -17,66 +17,113 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// getPrimes_cpp
+NumericVector getPrimes_cpp(int n);
+RcppExport SEXP _optpoly_getPrimes_cpp(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(getPrimes_cpp(n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// matrixToSparseTriplet_cpp
+NumericMatrix matrixToSparseTriplet_cpp(const NumericMatrix& mat, bool lowerTriangular);
+RcppExport SEXP _optpoly_matrixToSparseTriplet_cpp(SEXP matSEXP, SEXP lowerTriangularSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< bool >::type lowerTriangular(lowerTriangularSEXP);
+    rcpp_result_gen = Rcpp::wrap(matrixToSparseTriplet_cpp(mat, lowerTriangular));
+    return rcpp_result_gen;
+END_RCPP
+}
+// vecToMatrix_cpp
+NumericMatrix vecToMatrix_cpp(const NumericVector& vectorOfEntries, int dimMatrix, bool lowerTriangular);
+RcppExport SEXP _optpoly_vecToMatrix_cpp(SEXP vectorOfEntriesSEXP, SEXP dimMatrixSEXP, SEXP lowerTriangularSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type vectorOfEntries(vectorOfEntriesSEXP);
+    Rcpp::traits::input_parameter< int >::type dimMatrix(dimMatrixSEXP);
+    Rcpp::traits::input_parameter< bool >::type lowerTriangular(lowerTriangularSEXP);
+    rcpp_result_gen = Rcpp::wrap(vecToMatrix_cpp(vectorOfEntries, dimMatrix, lowerTriangular));
+    return rcpp_result_gen;
+END_RCPP
+}
+// columnEchelon_cpp
+NumericMatrix columnEchelon_cpp(const NumericMatrix& mat);
+RcppExport SEXP _optpoly_columnEchelon_cpp(SEXP matSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type mat(matSEXP);
+    rcpp_result_gen = Rcpp::wrap(columnEchelon_cpp(mat));
+    return rcpp_result_gen;
+END_RCPP
+}
 // degreeToMonomial_cpp
-int degreeToMonomial_cpp(NumericVector degree, NumericVector monomialPrimes);
+int degreeToMonomial_cpp(const NumericVector& degree, const NumericVector& monomialPrimes);
 RcppExport SEXP _optpoly_degreeToMonomial_cpp(SEXP degreeSEXP, SEXP monomialPrimesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type degree(degreeSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type monomialPrimes(monomialPrimesSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type degree(degreeSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type monomialPrimes(monomialPrimesSEXP);
     rcpp_result_gen = Rcpp::wrap(degreeToMonomial_cpp(degree, monomialPrimes));
     return rcpp_result_gen;
 END_RCPP
 }
 // monomialsToDegrees_cpp
-NumericMatrix monomialsToDegrees_cpp(NumericVector monomials, NumericVector monomialPrimes);
+NumericMatrix monomialsToDegrees_cpp(const NumericVector& monomials, const NumericVector& monomialPrimes);
 RcppExport SEXP _optpoly_monomialsToDegrees_cpp(SEXP monomialsSEXP, SEXP monomialPrimesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type monomials(monomialsSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type monomialPrimes(monomialPrimesSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type monomials(monomialsSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type monomialPrimes(monomialPrimesSEXP);
     rcpp_result_gen = Rcpp::wrap(monomialsToDegrees_cpp(monomials, monomialPrimes));
     return rcpp_result_gen;
 END_RCPP
 }
 // determineMonomialPosition_cpp
-int determineMonomialPosition_cpp(NumericVector degree, NumericVector monomialPrimes, NumericVector momentVector);
+int determineMonomialPosition_cpp(const NumericVector& degree, const NumericVector& monomialPrimes, const NumericVector& momentVector);
 RcppExport SEXP _optpoly_determineMonomialPosition_cpp(SEXP degreeSEXP, SEXP monomialPrimesSEXP, SEXP momentVectorSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type degree(degreeSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type monomialPrimes(monomialPrimesSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type momentVector(momentVectorSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type degree(degreeSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type monomialPrimes(monomialPrimesSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type momentVector(momentVectorSEXP);
     rcpp_result_gen = Rcpp::wrap(determineMonomialPosition_cpp(degree, monomialPrimes, momentVector));
     return rcpp_result_gen;
 END_RCPP
 }
 // evaluatePolynomial_cpp
-double evaluatePolynomial_cpp(NumericVector point, NumericVector coefs, NumericMatrix degrees);
+double evaluatePolynomial_cpp(const NumericVector& point, const NumericVector& coefs, const NumericMatrix& degrees);
 RcppExport SEXP _optpoly_evaluatePolynomial_cpp(SEXP pointSEXP, SEXP coefsSEXP, SEXP degreesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type point(pointSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type coefs(coefsSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type degrees(degreesSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type point(pointSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type coefs(coefsSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type degrees(degreesSEXP);
     rcpp_result_gen = Rcpp::wrap(evaluatePolynomial_cpp(point, coefs, degrees));
     return rcpp_result_gen;
 END_RCPP
 }
 // computeDerivative_cpp
-List computeDerivative_cpp(NumericVector coefs, NumericMatrix degrees, int dim, NumericVector monomialPrimes);
+List computeDerivative_cpp(const NumericVector& coefs, const NumericMatrix& degrees, int dim, const NumericVector& monomialPrimes);
 RcppExport SEXP _optpoly_computeDerivative_cpp(SEXP coefsSEXP, SEXP degreesSEXP, SEXP dimSEXP, SEXP monomialPrimesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type coefs(coefsSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type degrees(degreesSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type coefs(coefsSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type degrees(degreesSEXP);
     Rcpp::traits::input_parameter< int >::type dim(dimSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type monomialPrimes(monomialPrimesSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type monomialPrimes(monomialPrimesSEXP);
     rcpp_result_gen = Rcpp::wrap(computeDerivative_cpp(coefs, degrees, dim, monomialPrimes));
     return rcpp_result_gen;
 END_RCPP
@@ -108,25 +155,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// createMosekSdpModelSkeleton_cpp
-List createMosekSdpModelSkeleton_cpp(NumericVector nvar, NumericVector order, NumericVector isConstrained, NumericVector radius, NumericVector monomialPrimes, NumericMatrix momentMatrixSparse);
-RcppExport SEXP _optpoly_createMosekSdpModelSkeleton_cpp(SEXP nvarSEXP, SEXP orderSEXP, SEXP isConstrainedSEXP, SEXP radiusSEXP, SEXP monomialPrimesSEXP, SEXP momentMatrixSparseSEXP) {
+// createMosekSdpModelSkeletonLasserre_cpp
+List createMosekSdpModelSkeletonLasserre_cpp(NumericVector nvar, NumericVector order, NumericVector isConstrained, NumericVector isRectangular, NumericMatrix bounds, NumericVector radius, NumericVector monomialPrimes, NumericMatrix momentMatrixSparse);
+RcppExport SEXP _optpoly_createMosekSdpModelSkeletonLasserre_cpp(SEXP nvarSEXP, SEXP orderSEXP, SEXP isConstrainedSEXP, SEXP isRectangularSEXP, SEXP boundsSEXP, SEXP radiusSEXP, SEXP monomialPrimesSEXP, SEXP momentMatrixSparseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type nvar(nvarSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type order(orderSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type isConstrained(isConstrainedSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type isRectangular(isRectangularSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type bounds(boundsSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type radius(radiusSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type monomialPrimes(monomialPrimesSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type momentMatrixSparse(momentMatrixSparseSEXP);
-    rcpp_result_gen = Rcpp::wrap(createMosekSdpModelSkeleton_cpp(nvar, order, isConstrained, radius, monomialPrimes, momentMatrixSparse));
+    rcpp_result_gen = Rcpp::wrap(createMosekSdpModelSkeletonLasserre_cpp(nvar, order, isConstrained, isRectangular, bounds, radius, monomialPrimes, momentMatrixSparse));
     return rcpp_result_gen;
 END_RCPP
 }
-// createMosekSdpModelSkeletonWithGradientIdeals_cpp
-List createMosekSdpModelSkeletonWithGradientIdeals_cpp(NumericVector nvar, NumericVector orderObj, NumericVector orderMom, List gradientObj, NumericVector monomialPrimes, NumericMatrix momentMatrixSparse);
-RcppExport SEXP _optpoly_createMosekSdpModelSkeletonWithGradientIdeals_cpp(SEXP nvarSEXP, SEXP orderObjSEXP, SEXP orderMomSEXP, SEXP gradientObjSEXP, SEXP monomialPrimesSEXP, SEXP momentMatrixSparseSEXP) {
+// createMosekSdpModelSkeletonNieetal_cpp
+List createMosekSdpModelSkeletonNieetal_cpp(NumericVector nvar, NumericVector orderObj, NumericVector orderMom, List gradientObj, NumericVector monomialPrimes, NumericMatrix momentMatrixSparse);
+RcppExport SEXP _optpoly_createMosekSdpModelSkeletonNieetal_cpp(SEXP nvarSEXP, SEXP orderObjSEXP, SEXP orderMomSEXP, SEXP gradientObjSEXP, SEXP monomialPrimesSEXP, SEXP momentMatrixSparseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -136,13 +185,43 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< List >::type gradientObj(gradientObjSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type monomialPrimes(monomialPrimesSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type momentMatrixSparse(momentMatrixSparseSEXP);
-    rcpp_result_gen = Rcpp::wrap(createMosekSdpModelSkeletonWithGradientIdeals_cpp(nvar, orderObj, orderMom, gradientObj, monomialPrimes, momentMatrixSparse));
+    rcpp_result_gen = Rcpp::wrap(createMosekSdpModelSkeletonNieetal_cpp(nvar, orderObj, orderMom, gradientObj, monomialPrimes, momentMatrixSparse));
+    return rcpp_result_gen;
+END_RCPP
+}
+// createMosekQuadraticModelSkeleton_cpp
+List createMosekQuadraticModelSkeleton_cpp(NumericVector coefs, NumericMatrix degrees, NumericVector monomialPrimes);
+RcppExport SEXP _optpoly_createMosekQuadraticModelSkeleton_cpp(SEXP coefsSEXP, SEXP degreesSEXP, SEXP monomialPrimesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type coefs(coefsSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type degrees(degreesSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type monomialPrimes(monomialPrimesSEXP);
+    rcpp_result_gen = Rcpp::wrap(createMosekQuadraticModelSkeleton_cpp(coefs, degrees, monomialPrimes));
+    return rcpp_result_gen;
+END_RCPP
+}
+// createGurobiQuadraticModelSkeleton_cpp
+List createGurobiQuadraticModelSkeleton_cpp(NumericVector coefs, NumericMatrix degrees, NumericVector monomialPrimes);
+RcppExport SEXP _optpoly_createGurobiQuadraticModelSkeleton_cpp(SEXP coefsSEXP, SEXP degreesSEXP, SEXP monomialPrimesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type coefs(coefsSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type degrees(degreesSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type monomialPrimes(monomialPrimesSEXP);
+    rcpp_result_gen = Rcpp::wrap(createGurobiQuadraticModelSkeleton_cpp(coefs, degrees, monomialPrimes));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
     {"_optpoly_choose_cpp", (DL_FUNC) &_optpoly_choose_cpp, 2},
+    {"_optpoly_getPrimes_cpp", (DL_FUNC) &_optpoly_getPrimes_cpp, 1},
+    {"_optpoly_matrixToSparseTriplet_cpp", (DL_FUNC) &_optpoly_matrixToSparseTriplet_cpp, 2},
+    {"_optpoly_vecToMatrix_cpp", (DL_FUNC) &_optpoly_vecToMatrix_cpp, 3},
+    {"_optpoly_columnEchelon_cpp", (DL_FUNC) &_optpoly_columnEchelon_cpp, 1},
     {"_optpoly_degreeToMonomial_cpp", (DL_FUNC) &_optpoly_degreeToMonomial_cpp, 2},
     {"_optpoly_monomialsToDegrees_cpp", (DL_FUNC) &_optpoly_monomialsToDegrees_cpp, 2},
     {"_optpoly_determineMonomialPosition_cpp", (DL_FUNC) &_optpoly_determineMonomialPosition_cpp, 3},
@@ -150,8 +229,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_optpoly_computeDerivative_cpp", (DL_FUNC) &_optpoly_computeDerivative_cpp, 4},
     {"_optpoly_createMosekSdpCoefficientMatrixFromDegrees_cpp", (DL_FUNC) &_optpoly_createMosekSdpCoefficientMatrixFromDegrees_cpp, 4},
     {"_optpoly_createMosekSdpCoefficientMatrixFromMonomials_cpp", (DL_FUNC) &_optpoly_createMosekSdpCoefficientMatrixFromMonomials_cpp, 3},
-    {"_optpoly_createMosekSdpModelSkeleton_cpp", (DL_FUNC) &_optpoly_createMosekSdpModelSkeleton_cpp, 6},
-    {"_optpoly_createMosekSdpModelSkeletonWithGradientIdeals_cpp", (DL_FUNC) &_optpoly_createMosekSdpModelSkeletonWithGradientIdeals_cpp, 6},
+    {"_optpoly_createMosekSdpModelSkeletonLasserre_cpp", (DL_FUNC) &_optpoly_createMosekSdpModelSkeletonLasserre_cpp, 8},
+    {"_optpoly_createMosekSdpModelSkeletonNieetal_cpp", (DL_FUNC) &_optpoly_createMosekSdpModelSkeletonNieetal_cpp, 6},
+    {"_optpoly_createMosekQuadraticModelSkeleton_cpp", (DL_FUNC) &_optpoly_createMosekQuadraticModelSkeleton_cpp, 3},
+    {"_optpoly_createGurobiQuadraticModelSkeleton_cpp", (DL_FUNC) &_optpoly_createGurobiQuadraticModelSkeleton_cpp, 3},
     {NULL, NULL, 0}
 };
 

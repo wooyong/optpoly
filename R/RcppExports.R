@@ -5,6 +5,22 @@ choose_cpp <- function(n, k) {
     .Call(`_optpoly_choose_cpp`, n, k)
 }
 
+getPrimes_cpp <- function(n) {
+    .Call(`_optpoly_getPrimes_cpp`, n)
+}
+
+matrixToSparseTriplet_cpp <- function(mat, lowerTriangular) {
+    .Call(`_optpoly_matrixToSparseTriplet_cpp`, mat, lowerTriangular)
+}
+
+vecToMatrix_cpp <- function(vectorOfEntries, dimMatrix, lowerTriangular) {
+    .Call(`_optpoly_vecToMatrix_cpp`, vectorOfEntries, dimMatrix, lowerTriangular)
+}
+
+columnEchelon_cpp <- function(mat) {
+    .Call(`_optpoly_columnEchelon_cpp`, mat)
+}
+
 degreeToMonomial_cpp <- function(degree, monomialPrimes) {
     .Call(`_optpoly_degreeToMonomial_cpp`, degree, monomialPrimes)
 }
@@ -33,11 +49,19 @@ createMosekSdpCoefficientMatrixFromMonomials_cpp <- function(coefs, monomials, m
     .Call(`_optpoly_createMosekSdpCoefficientMatrixFromMonomials_cpp`, coefs, monomials, momentMatrixSparse)
 }
 
-createMosekSdpModelSkeleton_cpp <- function(nvar, order, isConstrained, radius, monomialPrimes, momentMatrixSparse) {
-    .Call(`_optpoly_createMosekSdpModelSkeleton_cpp`, nvar, order, isConstrained, radius, monomialPrimes, momentMatrixSparse)
+createMosekSdpModelSkeletonLasserre_cpp <- function(nvar, order, isConstrained, isRectangular, bounds, radius, monomialPrimes, momentMatrixSparse) {
+    .Call(`_optpoly_createMosekSdpModelSkeletonLasserre_cpp`, nvar, order, isConstrained, isRectangular, bounds, radius, monomialPrimes, momentMatrixSparse)
 }
 
-createMosekSdpModelSkeletonWithGradientIdeals_cpp <- function(nvar, orderObj, orderMom, gradientObj, monomialPrimes, momentMatrixSparse) {
-    .Call(`_optpoly_createMosekSdpModelSkeletonWithGradientIdeals_cpp`, nvar, orderObj, orderMom, gradientObj, monomialPrimes, momentMatrixSparse)
+createMosekSdpModelSkeletonNieetal_cpp <- function(nvar, orderObj, orderMom, gradientObj, monomialPrimes, momentMatrixSparse) {
+    .Call(`_optpoly_createMosekSdpModelSkeletonNieetal_cpp`, nvar, orderObj, orderMom, gradientObj, monomialPrimes, momentMatrixSparse)
+}
+
+createMosekQuadraticModelSkeleton_cpp <- function(coefs, degrees, monomialPrimes) {
+    .Call(`_optpoly_createMosekQuadraticModelSkeleton_cpp`, coefs, degrees, monomialPrimes)
+}
+
+createGurobiQuadraticModelSkeleton_cpp <- function(coefs, degrees, monomialPrimes) {
+    .Call(`_optpoly_createGurobiQuadraticModelSkeleton_cpp`, coefs, degrees, monomialPrimes)
 }
 

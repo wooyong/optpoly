@@ -955,7 +955,7 @@ List createMosekSdpModelSkeletonLasserre_cpp(NumericVector nvar, NumericVector o
                     barA_k(barAInd+2) = momentMatrixSparse(k,0);
                     barA_l(barAInd+2) = momentMatrixSparse(k,1);
                     // if off-diagonal, deflate the coefficient by half since the same is also copied to the upper-triangular part in Mosek
-                    if(barA_k(barAInd+2) == barA_l(barAInd+2)) { barA_v(barAInd+2) = bounds(j-1,0); } else { barA_v(barAInd+2) = 0.5 * bounds(j-1,0); }
+                    if(barA_k(barAInd+2) == barA_l(barAInd+2)) { barA_v(barAInd+2) = bounds(0,j-1); } else { barA_v(barAInd+2) = 0.5 * bounds(0,j-1); }
                     iInd++;
                     barAInd = barAInd + 3;
 
@@ -980,7 +980,7 @@ List createMosekSdpModelSkeletonLasserre_cpp(NumericVector nvar, NumericVector o
                     barA_k(barAInd+2) = momentMatrixSparse(k,0);
                     barA_l(barAInd+2) = momentMatrixSparse(k,1);
                     // if off-diagonal, deflate the coefficient by half since the same is also copied to the upper-triangular part in Mosek
-                    if(barA_k(barAInd+2) == barA_l(barAInd+2)) { barA_v(barAInd+2) = - 1.0 * bounds(j-1,1); } else { barA_v(barAInd+2) = - 0.5 * bounds(j-1,1); }
+                    if(barA_k(barAInd+2) == barA_l(barAInd+2)) { barA_v(barAInd+2) = - 1.0 * bounds(1,j-1); } else { barA_v(barAInd+2) = - 0.5 * bounds(1,j-1); }
                     iInd++;
                     barAInd = barAInd + 3;
                 }

@@ -5,7 +5,7 @@
 Global Optimization of a Polynomial
 }
 \description{
-Globally optimize a polynomial using semidefinite relaxation approaches proposed by Lasserre (2001) and Nie et al (2006).
+Globally optimize a polynomial using semidefinite relaxation approach proposed by Lasserre (2001) and Nie et al (2006).
 }
 \usage{
 optpoly(sense, coefs, degrees, opt = NULL)
@@ -19,24 +19,24 @@ whether to minimize or maximize the polynomial, either \code{"min"} or \code{"ma
 a vector of coefficients, \code{length(coefs)} must equal to \code{nrow(degrees)}.
 }
   \item{degrees}{
-a matrix of polynomial degrees, each row represents powers of the monomial for each entry of \code{coefs}.
+a matrix of polynomial degrees, each row represents powers of monomial for each entry of \code{coefs}.
 }
   \item{opt}{
 a list of options.
 }
 }
 \details{
-This function solves global polynomial optimization with or without the constraint that the domain of the polynomial is in a rectangle of the bounds or a sphere of the specified radius in \code{opt}. When unconstrained, this function implements Nie et al (2006)'s optimization method based on gradient ideals. When constrained, this function implements Lasserre (2001)'s optimization method. In both cases, a hierarchy of semidefinite programs (SDP), or a sequence of SDPs, is solved, which converges to the exact solution. The user can specify the following options:
+This function solves global polynomial optimization with or without the constraint that the domain of the polynomial is a rectangle or a sphere, specified in \code{opt}. When unconstrained, this function implements Nie et al (2006)'s optimization method based on gradient ideals. When constrained, this function implements Lasserre (2001)'s optimization method. In both cases, a hierarchy of semidefinite programs (SDP), or a sequence of SDPs, is solved, which converges to exact solution. The user can specify the following options:
 \describe{
-\item{\code{bounds}}{a matrix with \code{ncol(degrees)} rows and \code{2} columns. If supplied, the domain of the polynomial is restricted to be the rectangle with the first column being the lower bound vector and the second column being the upper bound vector. If omitted, the domain is assumed to be the entire Euclidean space.}
-\item{\code{radius}}{a positive real number. If supplied, the domain of the polynomial is restricted to be the sphere of length \code{radius}. If omitted, the domain is assumed to be the entire Euclidean space.}
-\item{\code{hierarchy}}{an integer that represents the length of hierarchy of semidefinite relaxations. Default is \code{1}.}
+\item{\code{bounds}}{a matrix of \code{2} rows and \code{ncol(degrees)} columns. If supplied, the domain of the polynomial is restricted to be a rectangle with the first row being the lower bound and the second row being the upper bound. If omitted, the domain is assumed to be the entire Euclidean space.}
+\item{\code{radius}}{a positive real number. If supplied, the domain of the polynomial is restricted to be the sphere of length \code{radius} centered at the origin. If omitted, the domain is assumed to be the entire Euclidean space.}
+\item{\code{hierarchy}}{an integer. The length of hierarchy of semidefinite relaxations. Default is \code{1}.}
 \item{\code{multithread}}{an indicator for whether to allow for multithreading to solve SDPs. Default is \code{FALSE}.}
 \item{\code{verbose}}{an integer that is passed to the SDP solver Mosek. If positive, Mosek will print its output on the R console. Default is \code{0}.}
-\item{\code{fabstol}}{absolute tolerance for function value used for certificate of solution. Default is \code{1e-10}.}
-\item{\code{freltol}}{relative tolerance for function value used for certificate of solution. Default is \code{1e-06}.}
+\item{\code{fabstol}}{absolute tolerance for function value used for certificate of optimality. Default is \code{1e-10}.}
+\item{\code{freltol}}{relative tolerance for function value used for certificate of optimality. Default is \code{1e-06}.}
 \item{\code{vabstol}}{absolute tolerance for regarding a value smaller than \code{vabstol} in absolute value as zero. Default is \code{1e-10}.}
-\item{\code{ereltol}}{relative tolerance for regarding a drop in the eigenvalue sequence as a drop to zero. It is used for checking rank condition for certificate of solution. Default is \code{1e-03}.}
+\item{\code{ereltol}}{relative tolerance for regarding a drop in the eigenvalue sequence as a drop to zero. It is used for checking the rank condition for certificate of optimality. Default is \code{1e-03}.}
 }
 }
 \value{
@@ -47,9 +47,9 @@ This function solves global polynomial optimization with or without the constrai
 \item{momentmatrix}{optimal moment matrix}
 \item{varDim}{dimension of the polynomial interpreted from the input}
 \item{order}{order of the polynomial interpreted from the input}
-\item{certificate}{certificate for exact solution}
+\item{certificate}{certificate of optimality for exact solution}
 \item{rank}{number of optimal solutions, if \code{certificate = TRUE}}
-\item{hierarchy}{number of iterations within hierarchy performed to obtain current output}
+\item{hierarchy}{number of iterations performed within hierarchy to obtain current output}
 }
 \references{
 Lasserre, Jean B (2001). Global optimization with polynomials and the problem of moments, \emph{SIAM Journal on optimization}, \strong{11}, 796-817.

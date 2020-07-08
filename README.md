@@ -2,18 +2,18 @@
 
 ### Introduction
 
-This package solves global polynomial optimization problems using semidefinite programming (SDP) approaches proposed by Lasserre (2001) and Nie et al (2006).
+This package solves global polynomial optimization problems using semidefinite programming (SDP) approach proposed by Lasserre (2001) and Nie et al (2006).
 
 ### Installation
 
-This package uses [Mosek](https://www.mosek.com/)'s R interface `Rmosek` to solve the SDPs, which must be installed before using `optpoly`.
+This package uses [Mosek](https://www.mosek.com/) (version 8 or higher) and its R interface `Rmosek` to solve the SDPs, which must be installed before using `optpoly`.
 
-Mosek offers free license to academic users. To install Mosek and its R interface, check the following [installation guide](https://docs.mosek.com/9.0/rmosek/install-interface.html).
+Mosek offers free academic license. To install Mosek and its R interface, check the following [installation guide](https://docs.mosek.com/9.2/rmosek/install-interface.html).
 
 To install **optpoly**, type
 
 ```r
-install.packages("https://wooyong.github.io/data/packages/optpoly_1.1.2.tar.gz", repos=NULL, type="source")
+install.packages("https://wooyong.github.io/data/packages/optpoly_1.2.0.tar.gz", repos=NULL, type="source")
 ```
 
 Alternatively, to install **optpoly** directly from source on Github, type
@@ -112,15 +112,15 @@ $hierarchy
 [1] 1
 ```
 
-`objective_primal` and `objective_dual` record values of the SDP primal and dual solutions. They are equal when no error occured in solving the SDP. When `certificate=TRUE`, this value is the exact global optimum.
+`objective_primal` and `objective_dual` are values of the SDP primal and dual solutions. They are equal unless there is an error in solving the SDP. The value is the exact global optimum if `certificate=TRUE`.
 
-`sdpstatus` and `solstatus` record status of the SDP solution. These are produced by [Mosek](https://www.mosek.com/).
+`sdpstatus` and `solstatus` are produced by [Mosek](https://www.mosek.com/). They record status of the SDP solution.
 
-`certificate` indicates the certificate of optimality. If `TRUE`, then `objective_primal` (which equals to `objective_dual`) is the exact global minimum. If `FALSE`, then `min(objective_primal, objective_dual)` is a lower bound for the global minimum.
+`certificate` is the **certificate of optimality**. If `TRUE`, then `objective_primal` (which equals to `objective_dual`) is the exact global minimum. If `FALSE`, then `min(objective_primal, objective_dual)` is a lower bound for the global minimum.
 
-`rank` represents the number of optimizers, if `certificate=TRUE`. The optimizers can be extracted by the `extractSolution` function in **optpoly**.
+`rank` is the number of optimizers, provided `certificate=TRUE`. Optimizers can be extracted by the `extractSolution` function in **optpoly**.
 
-`hierarchy` indicates the number of SDP models solved. This is similar to the number of iterations in local optimization algorithms. By default, `optpoly` solves only **one** SDP. This may result in `certificate=FALSE`, in which case one should increase the number of iterations to obtain exact solution. To increase it, specify, for example, `opt=list(hierarchy=3)`.
+`hierarchy` is the number of SDPs solved to reach the current output. This is similar to the number of iterations in local optimization algorithms. By default, `optpoly` solves only **one** SDP. This may result in `certificate=FALSE`, in which case one should increase the number of iterations to obtain exact solution. To increase it, specify, for example, `opt=list(hierarchy=3)`.
 
 For more details, including polynomial optimization on a bounded domain, type `?optpoly` in R.
 
@@ -128,15 +128,14 @@ To extract optimizers from the SDP solution, type
 
 ```r
 extractSolution(sol)
-```
 
-Each row of the function's output matrix represents an optimizer. For example, below tells that `(-0.08984222, 0.7126597)` and `(0.08984222 -0.7126597)` are global minimizers of `f(x1,x2)`.
-
-```r
             [,1]       [,2]
 [1,] -0.08984222  0.7126597
 [2,]  0.08984222 -0.7126597
+
 ```
+
+Each row of the output matrix represents an optimizer. The above tells that `(-0.08984222, 0.7126597)` and `(0.08984222 -0.7126597)` are global minimizers of `f(x1,x2)`.
 
 For more details, type `?extractSolution` in R.
 

@@ -10,10 +10,10 @@ This package uses [Mosek](https://www.mosek.com/) (version 8 or higher) and its 
 
 Mosek offers free academic license. To install Mosek and its R interface, check the following [installation guide](https://docs.mosek.com/9.2/rmosek/install-interface.html).
 
-To install **optpoly**, download the package from [Github release tab](https://github.com/wooyong/optpoly/releases), or copy-and-paste the following to your R console:
+To install **optpoly**, type
 
 ```r
-install.packages("https://github.com/wooyong/optpoly/releases/download/untagged-6e7c941cd863955bc632/optpoly_1.3.0.tar.gz", repos=NULL, type="source")
+install.packages("https://github.com/wooyong/optpoly/releases/download/v1.3.0/optpoly_1.3.0.tar.gz", repos=NULL, type="source")
 ```
 
 Alternatively, to install **optpoly** directly from source on Github, type

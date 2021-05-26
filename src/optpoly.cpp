@@ -1,3 +1,4 @@
+#include "vectorCounter.h"
 #include "optpoly.h"
 #include <Rcpp.h>
 using namespace Rcpp;
@@ -353,6 +354,12 @@ List computeDerivative_cpp(const NumericVector& coefs, const NumericMatrix& degr
     // return derivative
     return List::create(_["coefs"] = dCoefs,
                         _["degrees"] = dDegrees);
+}
+
+// [[Rcpp::export]]
+NumericMatrix enumerateVector_cpp(NumericVector max, int order) {
+    VectorCounter vc(max, order);
+    return vc.getTable();
 }
 
 //////////// functions for semidefinite optimization //////////

@@ -2,7 +2,7 @@
 \alias{optquad}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Global Optimization of a Quadratic Polynomial
+Globally Optimize a Quadratic Polynomial
 }
 \description{
 Globally optimize a quadratic polynomial using quadratic programming (QP) solver in Mosek
@@ -13,13 +13,13 @@ optquad(sense, coefs, degrees, constraints = NULL, opt = NULL)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{sense}{
-whether to minimize or maximize the polynomial, either \code{"min"} or \code{"max"}.
+to minimize or maximize the polynomial, either \code{"min"} or \code{"max"}.
 }
   \item{coefs}{
-a vector of coefficients, \code{length(coefs)} must equal to \code{nrow(degrees)}.
+a vector of polynomial coefficients.
 }
   \item{degrees}{
-a matrix of polynomial degrees, each row represents powers of the monomial for each entry of \code{coefs}.
+a matrix of polynomial degrees, each row representing powers of monomial for each entry of \code{coefs}.
 }
   \item{constraints}{
 a list of constraint configurations.
@@ -29,23 +29,23 @@ a list of options.
 }
 }
 \details{
-This function optimizes a quadratic polynomial with or without linear constraints. The linear constraint on the choice variable \code{x} can take the form \code{blc <= Ax <= buc}, or more simply {blx <= x <= bux}, or both. The argument \code{constraints} specifies these as follows:
+This function optimizes a quadratic polynomial using QP solver in Mosek. This function solves unconstrained optimization by default, and the user can specify constraints to perform constrained optimization. This function accepts constraints of the form \code{blc <= Ax <= buc} and \code{blx <= x <= bux} where \code{A} is a matrix, \code{x} is a choice variable vector and \code{blc,buc,blx,bux} are lower and upper bound vectors. The user can specify them in \code{constraints} by a list containing (some can be omitted if there is no constraint of the corresponding form):
 \describe{
 \item{\code{A}}{a coefficient matrix.}
-\item{\code{bc}}{a matrix of two rows, the first row being the vector \code{blc} and the second row being \code{buc}.}
-\item{\code{bx}}{a matrix of two rows, the first row being the vector \code{blx} and the second row being \code{bux}.}
+\item{\code{bc}}{a matrix of two rows, the first row being \code{blc} and the second row being \code{buc}.}
+\item{\code{bx}}{a matrix of two rows, the first row being \code{blx} and the second row being \code{bux}.}
 }
 The user can also specify the following options in \code{opt}:
 \describe{
-\item{\code{multithread}}{an indicator for whether to allow for multithreading to solve SDPs. Default is \code{FALSE}.}
-\item{\code{verbose}}{an integer that is passed to the SDP solver Mosek. If positive, Mosek will print its output on the R console. Default is \code{0}.}
+\item{\code{multithread}}{an indicator for using multithreading for solving QPs. Default is \code{FALSE}.}
+\item{\code{verbose}}{an integer. If positive, Mosek will print its output on the R console (see Rmosek documentation). Default is \code{0}.}
 }
 }
 \value{
-\item{objective_primal}{primal objective value}
-\item{objective_dual}{dual objective value}
-\item{qpstatus}{status of the QP}
-\item{solstatus}{status of the QP solution}
+\item{objective_primal}{primal objective value of the QP}
+\item{objective_dual}{dual objective value of the QP}
+\item{qpstatus}{status of the QP, passed from Rmosek}
+\item{solstatus}{status of the QP solution, passed from Rmosek}
 \item{solution}{optimal solution}
 }
 \references{

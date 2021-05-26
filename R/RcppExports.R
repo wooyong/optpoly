@@ -41,6 +41,10 @@ computeDerivative_cpp <- function(coefs, degrees, dim, monomialPrimes) {
     .Call(`_optpoly_computeDerivative_cpp`, coefs, degrees, dim, monomialPrimes)
 }
 
+enumerateVector_cpp <- function(max, order) {
+    .Call(`_optpoly_enumerateVector_cpp`, max, order)
+}
+
 createMosekSdpCoefficientMatrixFromDegrees_cpp <- function(coefs, degrees, monomialPrimes, momentMatrixSparse) {
     .Call(`_optpoly_createMosekSdpCoefficientMatrixFromDegrees_cpp`, coefs, degrees, monomialPrimes, momentMatrixSparse)
 }

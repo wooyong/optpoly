@@ -13,11 +13,11 @@ createMomentMatrixSparse(monomialVector)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{monomialVector}{
-a vector of monomials, output of \code{createMonomialVector$vec}.
+a vector of monomials produced by \code{createMonomialVector$vec}.
 }
 }
 \details{
-This function creates a moment matrix, which is the outer product of \code{monomialvector}, in sparse triplet form. The maximum degree of monomials appearing in the moment matrix is twice of the maximum degree of \code{monomialvector}.
+This function creates a moment matrix, namely the outer product of \code{monomialvector}, in sparse triplet form. The maximum degree of monomials appearing in the moment matrix is twice of the maximum degree of \code{monomialvector}.
 }
 \value{
 a moment matrix expressed in sparse triplet form.
@@ -40,7 +40,7 @@ Wooyong Lee
 \examples{
 # list of monomials in two dimensions of degree at most 2
 monomialVector = createMonomialVector(2, 2)
-# create the outer product of monomialvector in sparse triplet form
+# create outer product of monomialvector in sparse triplet form
 createMomentMatrixSparse(monomialVector$vec)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

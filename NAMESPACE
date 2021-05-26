@@ -1,8 +1,8 @@
 export("createMonomialVector",
        "createMomentMatrixSparse",
        "optpoly",
-       "optmanypoly",
        "extractSolution",
-       "optquad")
+       "optquad",
+       "solvepoly")
 importFrom(Rcpp, evalCpp)
 useDynLib(optpoly, .registration = TRUE)

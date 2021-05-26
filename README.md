@@ -10,10 +10,10 @@ This package uses [Mosek](https://www.mosek.com/) (version 8 or higher) and its 
 
 Mosek offers free academic license. To install Mosek and its R interface, check the following [installation guide](https://docs.mosek.com/9.2/rmosek/install-interface.html).
 
-To install **optpoly**, type
+To install **optpoly**, download the package from [Github release tab](https://github.com/wooyong/optpoly/releases), or copy-and-paste the following to your R console:
 
 ```r
-install.packages("https://wooyong.github.io/data/packages/optpoly_1.2.0.tar.gz", repos=NULL, type="source")
+install.packages("https://github.com/wooyong/optpoly/releases/download/untagged-6e7c941cd863955bc632/optpoly_1.3.0.tar.gz", repos=NULL, type="source")
 ```
 
 Alternatively, to install **optpoly** directly from source on Github, type
@@ -33,7 +33,7 @@ To load the package, simply type
 library(optpoly)
 ```
 
-### Usage
+### Polynomial Optimization
 
 Polynomials in **optpoly** are represented by degrees of monomials and their coefficients.
 
@@ -112,17 +112,19 @@ $hierarchy
 [1] 1
 ```
 
-`objective_primal` and `objective_dual` are values of the SDP primal and dual solutions. They are equal unless there is an error in solving the SDP. The value is the exact global optimum if `certificate=TRUE`.
+`objective_primal` and `objective_dual` are primal and dual solutions of the SDP. They are equal if the SDP algorithm has converged. This equal value is the exact global optimum if `certificate=TRUE`.
 
 `sdpstatus` and `solstatus` are produced by [Mosek](https://www.mosek.com/). They record status of the SDP solution.
 
-`certificate` is the **certificate of optimality**. If `TRUE`, then `objective_primal` (which equals to `objective_dual`) is the exact global minimum. If `FALSE`, then `min(objective_primal, objective_dual)` is a lower bound for the global minimum.
+`certificate` is the **certificate of optimality**. If `TRUE`, then `objective_primal` (which equals `objective_dual`) is the exact global minimum. If `FALSE`, then `min(objective_primal, objective_dual)` is a lower bound for the global minimum.
 
-`rank` is the number of optimizers, provided `certificate=TRUE`. Optimizers can be extracted by the `extractSolution` function in **optpoly**.
+`rank` is the number of optimizers, provided `certificate=TRUE`. Optimizers can be extracted by the `extractSolution` function explained in the next section.
 
-`hierarchy` is the number of SDPs solved to reach the current output. This is similar to the number of iterations in local optimization algorithms. By default, `optpoly` solves only **one** SDP. This may result in `certificate=FALSE`, in which case one should increase the number of iterations to obtain exact solution. To increase it, specify, for example, `opt=list(hierarchy=3)`.
+`hierarchy` is the number of SDPs solved to reach the current output. This is analogous to the number of iterations in other optimization algorithms. By default, `optpoly` solves only **one** SDP. This may result in `certificate=FALSE`, in which case one should increase it until one gets `certificate=TRUE`. To increase it, specify e.g. `opt=list(hierarchy=3)` in the option.
 
 For more details, including polynomial optimization on a bounded domain, type `?optpoly` in R.
+
+### Extracting Solutions
 
 To extract optimizers from the SDP solution, type
 
@@ -138,6 +140,43 @@ extractSolution(sol)
 Each row of the output matrix represents an optimizer. The above tells that `(-0.08984222, 0.7126597)` and `(0.08984222 -0.7126597)` are global minimizers of `f(x1,x2)`.
 
 For more details, type `?extractSolution` in R.
+
+### System of Polynomial Equations
+
+The SDP approach of polynomial optimization can also be used to solve a system of polynomial equations. The SDP approach directly searchs for real-valued solutions, which is computationally cheaper than algorithms that search for both real and complex solutions.
+
+To solve a system of polynomial equations, the SDP approach minimizes an auxiliary function (e.g. a zero function) with the system of equations as constraints. It then extract solutions from it.
+
+This is implemented by `solvepoly` function in **optpoly**. As an example, to solve a system `x^2+y^2-20=0` and `x+y-6=0`, type
+
+```r
+# define system of equations
+eqList = list(
+    # x^2 + y^2 - 20 = 0
+    list(degrees = matrix(c(2,0,  # x^2
+                            0,2,  # y^2
+                            0,0), # constant
+                            nrow=3, ncol=2, byrow=TRUE),
+         coefs   = c(1, 1, -20)),
+    # x + y - 6 = 0
+    list(degrees = matrix(c(1,0,
+                            0,1,
+                            0,0),
+                            nrow=3, ncol=2, byrow=TRUE),
+        coefs    = c(1, 1, -6))
+)
+
+# solve system of equations
+require(optpoly)
+sol = solvepoly(eqList, opt=list(hierarchy=2))
+extractSolution(sol)
+
+     [,1] [,2]
+[1,]    2    4
+[2,]    4    2
+```
+
+`sol` has the same output structure as `optpoly`. It is an intermediate output from minimizing a zero function with the system of equations as constraints. `sol` is then taken to `extractSolution` function to retrieve the solutions of the system of polynomial equations.
 
 ### References
 

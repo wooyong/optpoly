@@ -20,11 +20,11 @@ maximum degree of monomials.
 }
 }
 \details{
-This function creates a complete list of monomials in \code{varDim} dimensions of degree at most \code{order}. The monomials are represented by unique identifiers created by prime numbers. For example, to express a monomial in (x1, x2), x1 and x2 are represented by 2 and 3, and then a monomial x1^2*x2 is represented by 2^2*3 = 12.
+This function creates a complete list of monomials in \code{varDim} variables of degree at most \code{order}. To represent monomials numerically, I map variables into prime numbers. For example, to represent a monomial in two variables, I map (x1, x2) -> (2, 3). Then a monomial x1^2*x2 is represented by 2^2*3 = 12.
 }
 \value{
-\item{vec}{a vector containing all monomials in \code{varDim} dimensions of degree at most \code{order}}
-\item{primes}{a vector of prime numbers used to describe monomials, length of which equals \code{varDim}}
+\item{vec}{a vector containing all monomials in \code{varDim} variables of degree at most \code{order}}
+\item{primes}{a vector of prime numbers representing each variable}
 \item{order}{maximum degree of monomials}
 }
 \references{

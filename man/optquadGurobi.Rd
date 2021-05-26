@@ -2,7 +2,7 @@
 \alias{optquadGurobi}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Global Optimization of a Quadratic Polynomial
+Globally Optimize a Quadratic Polynomial
 }
 \description{
 Globally optimize a quadratic polynomial using quadratic programming (QP) solver in Gurobi
@@ -13,13 +13,13 @@ optquadGurobi(sense, coefs, degrees, constraints = NULL, opt = NULL)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{sense}{
-whether to minimize or maximize the polynomial, either \code{"min"} or \code{"max"}.
+to minimize or maximize the polynomial, either \code{"min"} or \code{"max"}.
 }
   \item{coefs}{
-a vector of coefficients, \code{length(coefs)} must equal to \code{nrow(degrees)}.
+a vector of polynomial coefficients.
 }
   \item{degrees}{
-a matrix of polynomial degrees, each row represents powers of the monomial for each entry of \code{coefs}.
+a matrix of polynomial degrees, each row representing powers of monomial for each entry of \code{coefs}.
 }
   \item{constraints}{
 a list of constraint configurations.
@@ -29,23 +29,23 @@ a list of options.
 }
 }
 \details{
-This function optimizes a quadratic polynomial with or without linear constraints. The linear constraint on the choice variable \code{x} can take the form \code{Ax (<=, =, >=) rhs}, or more simply {lb <= x <= ub}, or both. The argument \code{constraints} specifies these as follows:
+This function optimizes a quadratic polynomial using QP solver in Gurobi. This function solves unconstrained optimization by default, and the user can specify constraints to perform constrained optimization. This function accepts constraints of the form \code{Ax (<=, =, >=) rhs} and \code{lb <= x <= ub} where \code{A} is a matrix, \code{x} is a choice variable vector and \code{rhs,lb,ub} are lower and upper bound vectors. The user can specify them in \code{constraints} by a list containing (some can be omitted if there is no constraint of the corresponding form):
 \describe{
 \item{\code{A}}{a coefficient matrix.}
-\item{\code{rhs}}{a right-hand side vector that has the same length as \code{nrow(A)}.}
+\item{\code{rhs}}{a right-hand side vector.}
 \item{\code{sense}}{a vector of strings, which are either \code{"<="}, \code{"="} or \code{">="}.}
 \item{\code{lb}}{a vector of lower bounds.}
 \item{\code{ub}}{a vector of upper bounds.}
 }
 The user can also specify the following options in \code{opt}:
 \describe{
-\item{\code{Threads}}{the number of threads used to solve QP. Default is \code{1}.}
-\item{\code{OutputFlag}}{an integer that is passed to the SDP solver Mosek. If \code{1}, Mosek will print its output. If \code{0}, it will not. Default is \code{1}.}
+\item{\code{Threads}}{the number of threads used for solving QP. Default is \code{1}.}
+\item{\code{OutputFlag}}{an integer. If \code{1}, Gurobi will print its output. If \code{0}, it will not (see Gurobi documentation). Default is \code{1}.}
 }
 }
 \value{
-\item{objective}{objective value}
-\item{qpstatus}{status of the QP}
+\item{objective}{objective value of the QP}
+\item{qpstatus}{status of the QP, passed from Gurobi}
 \item{solution}{optimal solution}
 }
 \references{

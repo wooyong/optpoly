@@ -5,7 +5,7 @@
 Extract Solution
 }
 \description{
-Extract global optimizers of a polynomial from the semidefinite solution.
+Extract global optimizers of a polynomial from an SDP output.
 }
 \usage{
 extractSolution(sol, points = NULL, vabstol = 1e-10, ereltol = 0.001)
@@ -16,7 +16,7 @@ extractSolution(sol, points = NULL, vabstol = 1e-10, ereltol = 0.001)
 output of the function \code{optpoly}.
 }
   \item{points}{
-number of optimizers, set to \code{sol$rank} if missing.
+number of optimizers, set to \code{sol$rank} if omitted.
 }
   \item{vabstol}{
 absolute tolerance for regarding a value smaller than \code{vabstol} in absolute value as zero.
@@ -26,7 +26,7 @@ relative tolerance for regarding a drop in the eigenvalue sequence as a drop to 
 }
 }
 \details{
-This function extracts optimal solutions of a polynomial optimization problem given the output of \code{optpoly}. The number of solutions are automatically determined from the output. However, the user may specify the number of solutions to \code{points}, which can be useful if the number of solutions is known.
+This function implements Lasserre (2001)'s algorithm for computing optimal solutions of a polynomial optimization problem. The algorithm is a two-step procedure. The first step determines the number of solutions. The second step then computes coordinates of each solution. If the number of solutions is known, the user can specify it in \code{points} and skip the first step, which improves numerical performance of the algorithm.
 }
 \value{
 A matrix where each row represents a solution to the polynomial optimization problem.
@@ -63,7 +63,7 @@ sol=optpoly("min", cf, dg)
 # extract solution
 extractSolution(sol)
 
-# extract solution specifying number of solutions is 2
+# extract solution specifying the number of solutions is 2
 extractSolution(sol, points=2)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

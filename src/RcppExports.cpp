@@ -128,6 +128,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// enumerateVector_cpp
+NumericMatrix enumerateVector_cpp(NumericVector max, int order);
+RcppExport SEXP _optpoly_enumerateVector_cpp(SEXP maxSEXP, SEXP orderSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type max(maxSEXP);
+    Rcpp::traits::input_parameter< int >::type order(orderSEXP);
+    rcpp_result_gen = Rcpp::wrap(enumerateVector_cpp(max, order));
+    return rcpp_result_gen;
+END_RCPP
+}
 // createMosekSdpCoefficientMatrixFromDegrees_cpp
 List createMosekSdpCoefficientMatrixFromDegrees_cpp(NumericVector coefs, NumericMatrix degrees, NumericVector monomialPrimes, NumericMatrix momentMatrixSparse);
 RcppExport SEXP _optpoly_createMosekSdpCoefficientMatrixFromDegrees_cpp(SEXP coefsSEXP, SEXP degreesSEXP, SEXP monomialPrimesSEXP, SEXP momentMatrixSparseSEXP) {
@@ -227,6 +239,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_optpoly_determineMonomialPosition_cpp", (DL_FUNC) &_optpoly_determineMonomialPosition_cpp, 3},
     {"_optpoly_evaluatePolynomial_cpp", (DL_FUNC) &_optpoly_evaluatePolynomial_cpp, 3},
     {"_optpoly_computeDerivative_cpp", (DL_FUNC) &_optpoly_computeDerivative_cpp, 4},
+    {"_optpoly_enumerateVector_cpp", (DL_FUNC) &_optpoly_enumerateVector_cpp, 2},
     {"_optpoly_createMosekSdpCoefficientMatrixFromDegrees_cpp", (DL_FUNC) &_optpoly_createMosekSdpCoefficientMatrixFromDegrees_cpp, 4},
     {"_optpoly_createMosekSdpCoefficientMatrixFromMonomials_cpp", (DL_FUNC) &_optpoly_createMosekSdpCoefficientMatrixFromMonomials_cpp, 3},
     {"_optpoly_createMosekSdpModelSkeletonLasserre_cpp", (DL_FUNC) &_optpoly_createMosekSdpModelSkeletonLasserre_cpp, 8},

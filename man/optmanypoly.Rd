@@ -2,7 +2,7 @@
 \alias{optmanypoly}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Global Optimization of Many Polynomials
+Globally Optimize Many Polynomials
 }
 \description{
 Globally optimize many polynomials of same dimension and same degree.

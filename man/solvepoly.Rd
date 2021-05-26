@@ -1,32 +1,40 @@
-\name{optpoly}
-\alias{optpoly}
+\name{solvepoly}
+\alias{solvepoly}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Globally Optimize a Polynomial
+Solve a System of Polynomial Equations
 }
 \description{
-Globally optimize a polynomial using semidefinite relaxation approach proposed by Lasserre (2001) and Nie et al (2006).
+Solve a system of polynomial equations using semidefinite relaxation approach proposed by Lasserre (2001) and Nie et al (2006).
 }
 \usage{
-optpoly(sense, coefs, degrees, opt = NULL)
+solvepoly(equationsList, opt = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{sense}{
-to minimize or maximize the polynomial, either \code{"min"} or \code{"max"}.
-}
-  \item{coefs}{
-a vector of polynomial coefficients.
-}
-  \item{degrees}{
-a matrix of polynomial degrees, each row representing powers of monomial for each entry of \code{coefs}.
+  \item{equationsList}{
+a list of polynomial equations.
 }
   \item{opt}{
 a list of options.
 }
 }
 \details{
-This function solves a global polynomial optimization problem. Domain of optimization can be (i) entire Euclidean space (unconstrained), (ii) a sphere centered at origin or (iii) a rectangle. This function performs unconstrained optimization by default, and the user can specify sphere or rectangular domain in \code{opt} to perform constrained optimization. When unconstrained, this function implements Nie et al (2006)'s optimization method based on gradient ideals. When constrained, this function implements Lasserre (2001)'s optimization method. In both cases, this function solves a hierarchy of semidefinite programs (SDP), or a sequence of SDPs, which converges to exact solution. The user can specify the following options:
+This function solves a system of polynomial equations using an algorithm that solves hierarchy of semidefinite programs (SDP). This algorithm only searches for real-valued solutions, which is computationally cheaper than algorithms that search for all complex solutions. The system can be solved over (i) entire Euclidean space (unconstrained), (ii) a sphere centered at origin or (iii) a rectangle. This function uses unconstrained domain by default, and the user can specify sphere or rectangular domain in \code{opt} to use constrained domain.
+
+A system of polynomial equations is specified as an unlabeled list in \code{equationsList}. Each element of a list represents one polynomial equation, where the right-hand side is zero and the left-hand side is a polynomial represented by:
+\describe{
+\item{coefs}{
+a vector of polynomial coefficients.
+}
+\item{degrees}{
+a matrix of polynomial degrees, each row representing powers of monomial for each entry of \code{coefs}.
+}
+}
+
+To solve a system of polynomial equations, the algorithm solves an optimization problem where it minimizes a zero function subject to the constraint that the system of polynomial equations hold. Similar to the function \code{optpoly}, this amounts to solving a hierarchy of the SDPs, or a sequence of the SDPs, which converges to an exact solution. If the optimization gives an exact solution, the user can take the output to the function \code{extractSolution} and obtain solutions to the system of equations.
+
+This function uses modified version of \code{optpoly} for the optimization, and so it accepts the same set of options in \code{opt}. The user can specify the following options:
 \describe{
 \item{\code{bounds}}{a matrix of \code{2} rows and \code{ncol(degrees)} columns. If supplied, optimization is performed over a rectangle with the lower bound being the first row and the upper bound being the second row. If both \code{bounds} and \code{radius} are omitted, optimization is performed over the entire Euclidean space.}
 \item{\code{radius}}{a positive real number. If supplied, optimization is performed over a sphere of length \code{radius} centered at the origin. If both \code{bounds} and \code{radius} are omitted, optimization is performed over the entire Euclidean space.}
@@ -73,17 +81,34 @@ Wooyong Lee
 \examples{
 require(Rmosek)
 
-# 4x1^2 - 2.1x1^4 + (1/3)x1^6 + x1x2 - 4x2^2 + 4x2^4
-cf=c(4,-2.1,1/3,1,-4,4)
-dg=matrix(c(2,0,4,0,6,0,1,1,0,2,0,4), ncol=2, byrow=TRUE)
+# define system of equations
+eqList = list(
+    # x^2 + y^2 - 20 = 0
+    list(degrees = matrix(c(2,0,  # x^2
+                            0,2,  # y^2
+                            0,0), # constant
+                            nrow=3, ncol=2, byrow=TRUE),
+         coefs   = c(1, 1, -20)),
+    # x + y - 6 = 0
+    list(degrees = matrix(c(1,0,
+                            0,1,
+                            0,0),
+                            nrow=3, ncol=2, byrow=TRUE),
+        coefs    = c(1, 1, -6))
+)
 
-# minimization over R^2 space
-optpoly("min", cf, dg)
+# solve system of equations via optimization
+sol = solvepoly(eqList, opt=list(hierarchy=2))
 
-# minimization over a circle of radius 3 centered at the origin
-optpoly("min", cf, dg, list(radius=3))
+# extract solution from exact optimization result
+extractSolution(sol)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }% use one of  RShowDoc("KEYWORDS")
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+% R documentation directory (show via RShowDoc("KEYWORDS")):
+% \keyword{ ~kwd1 }
+% \keyword{ ~kwd2 }
+% Use only one keyword per line.
+% For non-standard keywords, use \concept instead of \keyword:
+% \concept{ ~cpt1 }
+% \concept{ ~cpt2 }
+% Use only one concept per line.

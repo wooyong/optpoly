@@ -300,7 +300,7 @@ checkEvaluation = function(coefs, degrees, objective_primal, objective_dual, opt
 
 }
 
-checkCertificate = function(varDim, orderMom, coefs, degrees, objective_primal, objective_dual, optimalMomentMatrix, options) {
+checkCertificate = function(varDim, orderMom, sdporder, coefs, degrees, objective_primal, objective_dual, optimalMomentMatrix, options) {
 
   # first, perform evaluation test
 
@@ -325,7 +325,7 @@ checkCertificate = function(varDim, orderMom, coefs, degrees, objective_primal, 
   # else, perform evaluation test using moment matrix rank as number of optimizers
 
   # extract optimizers
-  multipleOptima = extractSolution(list(varDim=varDim, order=orderMom, momentmatrix=optimalMomentMatrix),
+  multipleOptima = extractSolution(list(varDim=varDim, order=orderMom, sdporder=sdporder, momentmatrix=optimalMomentMatrix),
                                    checkFlat$rank, options$vabstol, options$ereltol)
 
   checkEvalMultiple = checkEvaluation(coefs, degrees, objective_primal, objective_dual, multipleOptima, options$fabstol, options$freltol)
@@ -611,7 +611,7 @@ optpoly = function(sense, coefs, degrees, opt=NULL) {
         # }
 
         # check certificate. Above operations are wrapped in the function checkCertificate
-        check = checkCertificate(varDim, models[[j]]$monomialSystem$order*2, coefs, degrees,
+        check = checkCertificate(varDim, models[[j]]$monomialSystem$order*2, models[[j]]$monomialSystem$order, coefs, degrees,
                                  mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval, optimalMomentMatrix, options)
 
         # if certificate obtained or last hierarchy, record solution
@@ -683,7 +683,7 @@ optpoly = function(sense, coefs, degrees, opt=NULL) {
         # }
 
         # check certificate. Above operations are wrapped in the function checkCertificate
-        check = checkCertificate(varDim, models[[j]]$monomialSystem$order*2, coefs, degrees,
+        check = checkCertificate(varDim, models[[j]]$monomialSystem$order*2, models[[j]]$monomialSystem$order, coefs, degrees,
                                  mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval, optimalMomentMatrix, options)
 
         # if certificate obtained or last hierarchy, record solution
@@ -1345,7 +1345,7 @@ solvepoly = function(equationsList, opt=NULL) {
         check = checkFlatExtensions(optimalMomentMatrix, varDim, models[[j]]$monomialSystem$order*2, 1, options$ereltol)
 
         # # do not use checkCertificate as it includes function evaluation method assuming unique/multiple solution
-        # check = checkCertificate(varDim, models[[j]]$monomialSystem$order*2, coefs, degrees,
+        # check = checkCertificate(varDim, models[[j]]$monomialSystem$order*2, models[[j]]$monomialSystem$order, coefs, degrees,
         #                          mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval, optimalMomentMatrix, options)
 
         # if certificate obtained or last hierarchy, record solution
@@ -1399,7 +1399,7 @@ solvepoly = function(equationsList, opt=NULL) {
         check = checkFlatExtensions(optimalMomentMatrix, varDim, models[[j]]$monomialSystem$order*2, 1, options$ereltol)
 
         # # do not use checkCertificate as it includes function evaluation method assuming unique/multiple solution
-        # check = checkCertificate(varDim, models[[j]]$monomialSystem$order*2, coefs, degrees,
+        # check = checkCertificate(varDim, models[[j]]$monomialSystem$order*2, models[[j]]$monomialSystem$order, coefs, degrees,
         #                          mosekSol$sol$itr$pobjval, mosekSol$sol$itr$dobjval, optimalMomentMatrix, options)
 
         # if certificate obtained or last hierarchy, record solution
